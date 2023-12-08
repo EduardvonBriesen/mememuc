@@ -11,6 +11,10 @@ export const memeRouter = router({
 
     return meme;
   }),
+  all: publicProcedure.query(async ({ ctx }) => {
+    const memes = await ctx.prisma.memes.findMany();
+    return memes;
+  }),
   save: publicProcedure
     .input(
       z.object({

@@ -43,6 +43,10 @@ export function getMeme(id: string) {
   return client.meme.get.query(id);
 }
 
+export function getAllMemes() {
+  return client.meme.all.query();
+}
+
 export function createMeme(username: string, base64: string) {
   return client.meme.save.mutate({ username, base64 });
 }
