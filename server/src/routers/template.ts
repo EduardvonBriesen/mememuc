@@ -3,8 +3,8 @@ import { publicProcedure, router } from "../trpc";
 
 export const templateRouter = router({
   all: publicProcedure.query(({ ctx }) => {
-    const templates = ctx.prisma.templates.findMany().then((templates) =>
-      templates.map((template) => ({
+    const templates = ctx.prisma.template.findMany().then((template) =>
+      template.map((template) => ({
         id: template.id,
         name: template.name,
       })),
@@ -18,7 +18,7 @@ export const templateRouter = router({
       }),
     )
     .query(({ ctx, input }) => {
-      const src = ctx.prisma.templates
+      const src = ctx.prisma.template
         .findUnique({
           where: {
             id: input.id,

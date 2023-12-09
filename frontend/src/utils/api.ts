@@ -58,3 +58,15 @@ export function login(username: string, password: string) {
 export function register(username: string, email: string, password: string) {
   return client.auth.register.mutate({ username, email, password });
 }
+
+export function setUserVote(
+  username: string,
+  memeId: string,
+  upvote?: boolean,
+) {
+  return client.meme.vote.mutate({ user: username, id: memeId, upvote });
+}
+
+export function getUserVotes(username: string) {
+  return client.user.getVotes.query({ username });
+}

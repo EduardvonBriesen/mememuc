@@ -6,7 +6,7 @@ export const authRouter = router({
   login: publicProcedure
     .input(z.object({ username: z.string(), password: z.string() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.users.findFirst({
+      const user = await ctx.prisma.user.findFirst({
         where: {
           username: input.username,
         },
@@ -33,7 +33,7 @@ export const authRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const users = ctx.prisma.users;
+      const users = ctx.prisma.user;
       const existingUser = await users.findFirst({
         where: {
           OR: [{ username: input.username }, { email: input.email }],

@@ -4,13 +4,13 @@ import { publicProcedure, router } from "../trpc";
 
 export const userRouter = router({
   all: publicProcedure.query(({ ctx }) => {
-    const users = ctx.prisma.users.findMany().then((users) => users);
+    const users = ctx.prisma.user.findMany().then((users) => users);
     return users;
   }),
   getUserByName: publicProcedure
     .input(z.object({ username: z.string() }))
     .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.users
+      const user = await ctx.prisma.user
         .findFirst({
           where: { username: input.username },
         })
@@ -30,7 +30,7 @@ export const userRouter = router({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.users
+      const user = await ctx.prisma.user
         .findFirst({
           where: { username: input.username },
         })
@@ -56,7 +56,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await ctx.prisma.users
+      const user = await ctx.prisma.user
         .findFirst({
           where: { username: input.username },
         })
@@ -68,7 +68,7 @@ export const userRouter = router({
 
       const id = new ObjectId().toHexString();
 
-      await ctx.prisma.users
+      await ctx.prisma.user
         .update({
           where: { id: user.id },
           data: {
@@ -96,7 +96,7 @@ export const userRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const user = await ctx.prisma.users
+      const user = await ctx.prisma.user
         .findFirst({
           where: { username: input.username },
         })
@@ -115,7 +115,7 @@ export const userRouter = router({
 
       user.templates.splice(index, 1);
 
-      await ctx.prisma.users
+      await ctx.prisma.user
         .update({
           where: { id: user.id },
           data: {
@@ -127,5 +127,24 @@ export const userRouter = router({
         });
 
       return;
+    }),
+  getVotes: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user
+        .findFirst({
+          where: { username: input.username },
+        })
+        .then((user) => user);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      return user.votes;
     }),
 });

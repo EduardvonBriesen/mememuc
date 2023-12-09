@@ -15,25 +15,46 @@ type UsersTemplates {
   base64 String
 }
 
-model memes {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+model Meme {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   base64    String
-  timestamp DateTime @default(now())
-  user      String
+  timestamp DateTime  @default(now())
+  userId    String    @db.ObjectId
+  user      User      @relation(fields: [userId], references: [id])
+  upvotes   Int       @default(0)
+  downvotes Int       @default(0)
+  Comment   Comment[]
 }
 
-model templates {
+model Comment {
+  id        String   @id @map("_id") @db.ObjectId
+  timestamp DateTime
+  text      String
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  memeId    String?  @db.ObjectId
+  Meme      Meme?    @relation(fields: [memeId], references: [id])
+}
+
+model Template {
   id    String @id @default(auto()) @map("_id") @db.ObjectId
   image String
   name  String
   type  String
 }
 
-model users {
+model User {
   id        String           @id @default(auto()) @map("_id") @db.ObjectId
   username  String           @unique
   password  String
   email     String           @unique
   templates UsersTemplates[]
-  memes     String[]         @default([])
+  memes     Meme[]
+  comment   Comment[]
+  votes     Vote[]
+}
+
+type Vote {
+  memeId String  @db.ObjectId
+  upvote Boolean
 }
