@@ -26,4 +26,4 @@ const server = createHTTPServer({
   createContext,
 });
 
-server.listen(4000);
+server.listen(3000);
