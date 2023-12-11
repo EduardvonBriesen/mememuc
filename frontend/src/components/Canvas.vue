@@ -130,7 +130,8 @@ function generateMeme(targetFileSizeKB: number) {
 
     //save image to mongoDB database
     createMeme(username, dataUrl).then((res) => {
-      openMemeSingleView(res.data.id);
+      console.log(res);
+      openMemeSingleView(res.id);
     });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
     console.log("Meme generated with quality:", quality);

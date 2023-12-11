@@ -1,35 +1,23 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
+import { getMeme } from "@/utils/api";
 
-async function getMemeById(memeId: any) {
-  try {
-    const apiUrl = `http://localhost:3001/memes/${memeId}`;
+const meme = ref<{
+  base64: string;
+  id: string;
+  timestamp: string;
+  user: string;
+}>();
 
-    const response = await fetch(apiUrl);
-
-    if (response.ok) {
-      const memeData = await response.json();
-      console.log("Meme Data:", memeData);
-
-      return memeData;
-    } else {
-      console.error("Failed to fetch meme:", response.statusText);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
+onMounted(() => {
+  loadMeme();
+});
 
 async function loadMeme() {
   const route = useRoute();
-  const memeId = route.params.memeId;
-  const meme = await getMemeById(memeId);
-  console.log("MemeData:", meme.memeData);
-
-  const imgSrc = "data:image/png;base64, " + meme.memeData;
-  const memeImage = document.getElementById("memeImage") as HTMLImageElement;
-  memeImage.setAttribute("src", imgSrc);
+  const memeId = route.params.memeId as string;
+  meme.value = await getMeme(memeId);
 }
 
 function downloadMeme() {
@@ -54,17 +42,13 @@ async function shareMeme() {
     console.error("Error copying URL to clipboard:", error);
   }
 }
-
-onMounted(() => {
-  loadMeme();
-});
 </script>
 
 <template>
   <div class="flex w-fit flex-col justify-center gap-4">
     <div class="card bg-neutral h-fit w-fit">
       <div class="card-body">
-        <img id="memeImage" alt="Meme Image" />
+        <img id="memeImage" alt="Meme Image" :src="meme?.base64" />
       </div>
     </div>
     <div class="flex justify-center gap-4">
