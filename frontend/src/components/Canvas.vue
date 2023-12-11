@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { fabric } from "fabric";
 import { Ref, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import {
   ChatBubbleBottomCenterTextIcon as TextIcon,
   PaintBrushIcon as BrushIcon,
 } from "@heroicons/vue/24/solid";
 import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
-import TemplateGeneration from "@/components/TemplateGeneration.vue";
+// import TemplateGeneration from "@/components/TemplateGeneration.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 
@@ -19,6 +20,8 @@ let canvas: fabric.Canvas;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
+
+const router = useRouter();
 
 onMounted(async () => {
   canvas = new fabric.Canvas(can.value);
@@ -93,44 +96,59 @@ function setDrawingMode(value: boolean) {
   canvas.isDrawingMode = value;
 }
 
-function generateMeme() {
-  // Funktionalität das Meme zu erzeugen hierher auslagern
-  // Download Funktionalität in die Single View einbauen?
-  // -> Dann hier Funktionalität SingleView anzuzeigen
-}
-
-function downloadMeme() {
+function generateMeme(targetFileSizeKB: number) {
   // Check if there is a background image and it is not tainted
   if (
     canvas.backgroundImage &&
     !(canvas.backgroundImage as fabric.Image).crossOrigin
   ) {
-    // Create a data URL for the canvas
-    const dataUrl = canvas.toDataURL({ format: "png", quality: 1 });
+    let quality = 1; // Initial quality setting
 
-    // Create a link element and trigger a click to download the image
-    const link = document.createElement("a");
-    link.href = dataUrl;
-    link.download = "my_meme.png";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Generate the image data URL and check its file size
+    let dataUrl;
+    do {
+      dataUrl = canvas.toDataURL({ format: "png", quality });
+      const fileSizeKB = dataUrl.length / 1024;
 
-    //save image to mongoDB database
-    saveMemeToDb(dataUrl);
+      // If the file size exceeds the target, reduce the quality and try again
+      if (fileSizeKB > targetFileSizeKB) {
+        quality -= 0.01; // You can adjust the step size as needed
+      }
+    } while (quality > 0 && dataUrl.length / 1024 > targetFileSizeKB);
 
-    // Open the image in a new tab, maybe this should instead open the single view of the meme?
-    const newTab = window.open();
-    if (newTab) {
-      newTab.document.write(`<img src="${dataUrl}" alt="my_meme"/>`);
-    } else {
-      console.error("Unable to open new tab.");
+    if (dataUrl.length / 1024 > targetFileSizeKB) {
+      const userInput = window.prompt(
+        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB):",
+        "1000",
+      );
+      const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+
+      // Call the generateMeme function with the target file size
+      generateMeme(targetFileSizeKB);
+      return;
     }
+
+    // Save the image to the database
+    saveMemeToDb(dataUrl);
+    console.log("Meme generated with filesize:", dataUrl.length / 1024);
+    console.log("Meme generated with quality:", quality);
   } else {
     console.error(
       "Background image is tainted. Ensure that it is hosted on the same domain or has proper CORS headers.",
     );
   }
+}
+
+function generateMemeWithPrompt() {
+  const userInput = window.prompt(
+    "Enter the desired maximum file size in kilobytes (KB):",
+    "1000",
+  );
+
+  const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+
+  // Call the generateMeme function with the target file size
+  generateMeme(targetFileSizeKB);
 }
 
 async function saveMemeToDb(dataUrl: string) {
@@ -158,6 +176,7 @@ async function saveMemeToDb(dataUrl: string) {
     if (response.ok) {
       const result = await response.json();
       console.log("Meme saved to MongoDB. Meme ID:", result.memeId);
+      openMemeSingleView(result.memeId);
     } else {
       console.error("Failed to save meme to MongoDB");
       console.error("Error:", response);
@@ -165,6 +184,10 @@ async function saveMemeToDb(dataUrl: string) {
   } catch (error) {
     console.error("Error:", error);
   }
+}
+
+function openMemeSingleView(memeId: string) {
+  router.push(`/memes/${memeId}`);
 }
 </script>
 
@@ -197,8 +220,8 @@ async function saveMemeToDb(dataUrl: string) {
       </div>
       <!-- <TemplateGeneration  :canvas="canvas"  /> -->
       <div class="flex justify-center gap-4">
-        <button class="btn btn-primary w-48" @click="downloadMeme">
-          Create Meme
+        <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
+          Generate Meme
         </button>
       </div>
     </div>
