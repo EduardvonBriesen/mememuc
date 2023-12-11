@@ -4,11 +4,13 @@ import { router } from "./src/trpc";
 import cors from "cors";
 import { createContext } from "./src/context";
 
+import { authRouter } from "./src/routers/auth";
 import { memeRouter } from "./src/routers/meme";
 import { userRouter } from "./src/routers/user";
 import { templateRouter } from "./src/routers/template";
 
 const appRouter = router({
+  auth: authRouter,
   meme: memeRouter,
   template: templateRouter,
   user: userRouter,

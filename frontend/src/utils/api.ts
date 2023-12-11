@@ -46,3 +46,11 @@ export function getMeme(id: string) {
 export function createMeme(username: string, base64: string) {
   return client.meme.save.mutate({ username, base64 });
 }
+
+export function login(username: string, password: string) {
+  return client.auth.login.query({ username, password });
+}
+
+export function register(username: string, email: string, password: string) {
+  return client.auth.register.mutate({ username, email, password });
+}
