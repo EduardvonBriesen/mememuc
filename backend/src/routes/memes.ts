@@ -36,4 +36,32 @@ router.post("/save", async (req: any, res) => {
   }
 });
 
+// Get meme data by memeId
+router.get("/:memeId", async (req: any, res) => {
+  try {
+    const db = req.db;
+    const memeId = req.params.memeId;
+
+    const memes = db.get("memes");
+
+    const meme = await memes.findOne({ _id: memeId });
+
+    if (!meme) {
+      res.status(404).json({ message: "Meme not found" });
+      return;
+    }
+
+    res.status(200).json({
+      memeId: meme._id,
+      memeData: meme.memeData,
+      type: meme.type,
+      timestamp: meme.timestamp,
+      username: meme.username,
+    });
+  } catch (error) {
+    console.error("Error fetching meme data:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
 export default router;
