@@ -8,7 +8,7 @@ import {
 } from "@heroicons/vue/24/solid";
 import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
-// import TemplateGeneration from "@/components/TemplateGeneration.vue";
+//import TemplateGeneration from "@/components/TemplateGeneration.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 
@@ -17,6 +17,11 @@ const username = "test-user"; // TODO: get username from login
 const can = ref(null);
 
 let canvas: fabric.Canvas;
+
+// New variables for resizing
+let resizing = false;
+let lastPosX = 0;
+let lastPosY = 0;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
@@ -41,8 +46,8 @@ onMounted(async () => {
 
 function addText() {
   const text = new fabric.IText("hello world", {
-    left: (activeObject.value?.left ?? 0) + 10,
-    top: (activeObject.value?.top ?? 0) + 10,
+    left: ((activeObject.value as fabric.IText)?.left ?? 0) + 10,
+    top: ((activeObject.value as fabric.IText)?.top ?? 0) + 10,
   });
   canvas.add(text);
   canvas.setActiveObject(text);
@@ -66,12 +71,13 @@ async function setTemplate(url: string) {
   img.onload = function () {
     const width = img.width ?? 500;
     const height = img.height ?? 500;
-
-    const scale = 500 / width;
+    const scale = 500 / Math.max(width, height);
 
     const fabricImg = new fabric.Image(img, {
       scaleX: scale,
       scaleY: scale,
+      selectable: true,
+      hasControls: true,
     });
 
     canvas.setWidth(width * scale);
@@ -82,6 +88,9 @@ async function setTemplate(url: string) {
     canvas.setHeight(height * scale);
 
     canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
+
+    canvas.add(fabricImg);
+    canvas.setActiveObject(fabricImg);
   };
 
   img.onerror = function (error) {
@@ -189,6 +198,37 @@ async function saveMemeToDb(dataUrl: string) {
 function openMemeSingleView(memeId: string) {
   router.push(`/memes/${memeId}`);
 }
+
+function startResizing(e: MouseEvent) {
+  resizing = true;
+  lastPosX = e.clientX;
+  lastPosY = e.clientY;
+  document.addEventListener("mousemove", resizeCanvas);
+  document.addEventListener("mouseup", stopResizing);
+}
+
+function resizeCanvas(e: MouseEvent) {
+  if (!resizing) return;
+  const dx = e.clientX - lastPosX;
+  const dy = e.clientY - lastPosY;
+  if (
+    (canvas.width as number) + dx > 100 &&
+    (canvas.height as number) + dy > 100
+  ) {
+    // Minimum size check
+    canvas.setWidth((canvas.width as number) + dx);
+    canvas.setHeight((canvas.height as number) + dy);
+    canvas.renderAll();
+  }
+  lastPosX = e.clientX;
+  lastPosY = e.clientY;
+}
+
+function stopResizing() {
+  resizing = false;
+  document.removeEventListener("mousemove", resizeCanvas);
+  document.removeEventListener("mouseup", stopResizing);
+}
 </script>
 
 <template>
@@ -216,6 +256,19 @@ function openMemeSingleView(memeId: string) {
       <div class="card bg-neutral h-fit w-fit">
         <div class="card-body">
           <canvas ref="can" width="500" height="500"></canvas>
+          <div
+            class="resize-handle"
+            @mousedown="startResizing"
+            style="
+              cursor: nwse-resize;
+              position: absolute;
+              bottom: 0;
+              right: 0;
+              width: 20px;
+              height: 20px;
+              background: gray;
+            "
+          ></div>
         </div>
       </div>
       <!-- <TemplateGeneration  :canvas="canvas"  /> -->
