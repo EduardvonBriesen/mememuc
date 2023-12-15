@@ -8,9 +8,9 @@ import {
 } from "@heroicons/vue/24/solid";
 import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
-// import TemplateGeneration from "@/components/TemplateGeneration.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
+import { createMeme } from "@/utils/api";
 
 const username = "test-user"; // TODO: get username from login
 
@@ -48,8 +48,8 @@ function addText() {
   canvas.setActiveObject(text);
 }
 
-async function setTemplate(url: string) {
-  if (url === "") {
+async function setTemplate(src: string) {
+  if (src === "") {
     canvas.clear();
     canvas.setBackgroundColor("white", () => {
       canvas.setDimensions({ width: 500, height: 500 });
@@ -88,7 +88,7 @@ async function setTemplate(url: string) {
     console.error("Error loading image:", error);
   };
 
-  img.src = url;
+  img.src = src;
 }
 
 function setDrawingMode(value: boolean) {
@@ -128,8 +128,11 @@ function generateMeme(targetFileSizeKB: number) {
       return;
     }
 
-    // Save the image to the database
-    saveMemeToDb(dataUrl);
+    //save image to mongoDB database
+    createMeme(username, dataUrl).then((res) => {
+      console.log(res);
+      openMemeSingleView(res.id);
+    });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
     console.log("Meme generated with quality:", quality);
   } else {
@@ -149,41 +152,6 @@ function generateMemeWithPrompt() {
 
   // Call the generateMeme function with the target file size
   generateMeme(targetFileSizeKB);
-}
-
-async function saveMemeToDb(dataUrl: string) {
-  try {
-    const base64Data = dataUrl.split(",")[1];
-    const imageType = dataUrl.split(";")[0].split(":")[1];
-
-    // Get the current timestamp
-    const timestamp = new Date().getTime();
-    // console.log("Timestamp:", timestamp);
-
-    const response = await fetch("http://localhost:3001/memes/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        memeData: base64Data,
-        type: imageType,
-        timestamp: timestamp,
-        username: username,
-      }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log("Meme saved to MongoDB. Meme ID:", result.memeId);
-      openMemeSingleView(result.memeId);
-    } else {
-      console.error("Failed to save meme to MongoDB");
-      console.error("Error:", response);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
 }
 
 function openMemeSingleView(memeId: string) {

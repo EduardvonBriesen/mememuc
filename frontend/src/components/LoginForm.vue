@@ -1,38 +1,15 @@
-<template>
-  <div>
-    <form>
-      <div class="form-group">
-        <label>Username</label>
-        <input v-model="username" type="text" id="username" />
-      </div>
-
-      <div class="form-group">
-        <label>Password</label>
-        <input v-model="password" type="password" id="password" />
-      </div>
-
-      <button @click="login" class="btn btn-dark btn-lg btn-block">
-        Login
-      </button>
-    </form>
-  </div>
-</template>
-
 <script setup lang="ts">
+import { login } from "@/utils/api";
 import { ref } from "vue";
-import axios from "axios";
 
 const username = ref("");
 const password = ref("");
 
-const login = async (event) => {
+const onSubmit = async (event: any) => {
   event.preventDefault();
 
   try {
-    const response = await axios.post("http://localhost:3001/login", {
-      username: username.value,
-      password: password.value,
-    });
+    const response = await login(username.value, password.value);
 
     console.log("Login successful");
     console.log(response);
@@ -47,3 +24,21 @@ const login = async (event) => {
   }
 };
 </script>
+
+<template>
+  <div>
+    <form @submit="onSubmit">
+      <div class="form-group">
+        <label>Username</label>
+        <input v-model="username" type="text" id="username" />
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input v-model="password" type="password" id="password" />
+      </div>
+
+      <button type="submit" class="btn btn-dark btn-lg btn-block">Login</button>
+    </form>
+  </div>
+</template>

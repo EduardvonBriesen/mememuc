@@ -1,48 +1,72 @@
-export async function getAllTemplates(): Promise<
-  { id: string; name: string }[]
-> {
-  const response = await fetch("http://localhost:3001/template/all");
-  return await response.json().then((data) => data.templates);
+import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "../../../server";
+
+const client = createTRPCProxyClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: "http://localhost:3000",
+    }),
+  ],
+});
+
+export function getUserTemplates(user: string, origin?: "upload" | "camera") {
+  return client.user.getUserTemplates.query({ username: user, origin });
 }
 
-export async function getRandomTemplate(): Promise<{
-  id: string;
-  name: string;
-}> {
-  const response = await fetch("http://localhost:3001/template/random");
-  return await response.json();
-}
-
-export async function getUserTemplates(
+export function uploadUserTemplate(
   user: string,
-  origin?: "upload" | "camera",
-): Promise<{ id: string; name: string }[]> {
-  const response = await fetch(
-    `http://localhost:3001/users/all/${user}?origin=${origin}`,
-  );
-  return await response.json().then((data) => data.templates);
-}
-
-export async function uploadUserTemplate(
-  user: string,
-  file: File,
+  name: string,
+  base64: string,
   origin: "upload" | "camera",
-): Promise<string> {
-  const formData = new FormData();
-  formData.append("file", file);
-  const url = `http://localhost:3001/users/upload/${user}?origin=${origin}`;
-  const response = await fetch(url, {
-    method: "POST",
-    body: formData,
+) {
+  return client.user.uploadTemplate.mutate({
+    username: user,
+    origin,
+    name,
+    base64,
   });
-  return await response.json();
 }
 
-export async function deleteUserTemplate(
-  user: string,
-  id: string,
-): Promise<void> {
-  await fetch(`http://localhost:3001/users/delete/${user}/${id}`, {
-    method: "DELETE",
-  });
+export function deleteUserTemplate(user: string, id: string) {
+  return client.user.deleteTemplate.mutate({ username: user, id });
+}
+
+export function getAllTemplates() {
+  return client.template.all.query();
+}
+
+export function getTemplateImage(id: string) {
+  return client.template.getSrc.query({ id });
+}
+
+export function getMeme(id: string) {
+  return client.meme.get.query(id);
+}
+
+export function getAllMemes() {
+  return client.meme.all.query();
+}
+
+export function createMeme(username: string, base64: string) {
+  return client.meme.save.mutate({ username, base64 });
+}
+
+export function login(username: string, password: string) {
+  return client.auth.login.query({ username, password });
+}
+
+export function register(username: string, email: string, password: string) {
+  return client.auth.register.mutate({ username, email, password });
+}
+
+export function setUserVote(
+  username: string,
+  memeId: string,
+  upvote?: boolean,
+) {
+  return client.meme.vote.mutate({ user: username, id: memeId, upvote });
+}
+
+export function getUserVotes(username: string) {
+  return client.user.getVotes.query({ username });
 }

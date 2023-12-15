@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import Gallery from "@/components/Gallery.vue";
 import {
-  deleteUserTemplate,
   getUserTemplates,
   uploadUserTemplate,
+  deleteUserTemplate,
 } from "@/utils/api";
-import Gallery from "@/components/Gallery.vue";
 
 const username = "test-user"; // TODO: get username from login
 
@@ -16,30 +16,51 @@ interface Props {
 const props = defineProps<Props>();
 
 const file = ref();
-const userTemplates = ref<{ id: string; name: string; url: string }[]>([]);
+const userTemplates = ref<{ id: string; name: string; src: string }[]>([]);
 
 onMounted(async () => {
   getUserTemplates(username, "upload").then((data) => {
     userTemplates.value = data.map((template) => ({
       id: template.id,
       name: template.name,
-      url: `http://localhost:3001/users/img/${username}/${template.id}`,
+      src: template.base64,
     }));
   });
 });
 
 async function handleFileUpload(event: Event) {
   event.preventDefault();
-  uploadUserTemplate(username, file.value, "upload").then((data) => {
-    props.setTemplate(`http://localhost:3001/users/img/${username}/${data.id}`);
-  });
-  getUserTemplates(username).then((data) => {
-    userTemplates.value = data.map((template) => ({
-      id: template.id,
-      name: template.name,
-      url: `http://localhost:3001/users/img/${username}/${template.id}`,
-    }));
-  });
+
+  if (!file.value) {
+    alert("Please select an image.");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const base64String = reader.result as string;
+
+    console.log(base64String);
+
+    uploadUserTemplate(username, file.value.name, base64String, "upload").then(
+      () => {
+        props.setTemplate(base64String);
+        userTemplates.value.push({
+          id: file.value.name,
+          name: file.value.name,
+          src: base64String,
+        });
+      },
+    );
+  };
+
+  reader.onerror = (error) => {
+    console.error("Error occurred while reading the file:", error);
+  };
+
+  // Convert the file to Base64
+  reader.readAsDataURL(file.value);
 }
 
 async function handleFileDelete(id: string) {
@@ -76,3 +97,4 @@ async function handleFileDelete(id: string) {
     :onDelete="handleFileDelete"
   />
 </template>
+@/utils/api
