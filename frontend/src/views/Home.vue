@@ -3,8 +3,15 @@ import { onMounted, ref } from "vue";
 import {
   HandThumbUpIcon as UpIcon,
   HandThumbDownIcon as DownIcon,
+  MegaphoneIcon as SpeechIcon,
 } from "@heroicons/vue/24/solid";
-import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
+import {
+  getAllMemes,
+  getUserVotes,
+  setUserVote,
+  getMeme,
+  getTemplateImage,
+} from "@/utils/api";
 
 const username = "test-user"; // TODO: get username from login
 
@@ -41,6 +48,30 @@ function updateVote(memeId: string, upvote: boolean) {
     setUserVote(username, memeId, upvote);
   }
 }
+
+//Idee: Eventuell Bildinhalt extrahieren und extern erkennen lassen?
+function extractMemeImage(memeId: string) {
+  const memeData = getMeme(memeId);
+  const imageData = memeData.base64;
+  return imageData;
+}
+function getTemplateName(memeId: string) {
+  const memeData = getTemplateImage(memeId);
+  console.log("Hole Infos...");
+  console.log(memeData);
+  console.log("Infos sollten da sein");
+}
+
+function generateSpeech(memeId: string) {
+  getTemplateName("65587eab5914276764c48823");
+  var textToSpeak =
+    "Das Meme heißt 'Is this a thing? und in diesem Meme steht kein Text. Das Upvote/Downvote Verhältnis ist '0'. Du hast noch nicht abgestimmt.";
+
+  var synth = window.speechSynthesis;
+  var utterance = new SpeechSynthesisUtterance(textToSpeak);
+  synth.speak(utterance);
+  window.alert("Button geht!");
+}
 </script>
 
 <template>
@@ -64,6 +95,14 @@ function updateVote(memeId: string, upvote: boolean) {
         v-for="meme in memes"
         :key="meme.id"
       >
+        <!-- Speech Icon trigger-->
+        <button
+          class="btn btn-circle btn-primary btn-outline"
+          @click="() => generateSpeech()"
+        >
+          <SpeechIcon class="h-6 w-6" />
+        </button>
+
         <figure>
           <img :src="meme.base64" />
         </figure>
