@@ -23,9 +23,8 @@ const submitForm = async (event: any) => {
       router.push("/");
     })
     .catch((error) => {
-      console.log("Fehlermeldung: ", error);
-      errorMessage.value =
-        "An account with the username or e-mail is already registered. Please use a different username or e-mail.";
+      console.log("Register Error: ", error);
+      errorMessage.value = "Username or E-Mail already taken.";
     });
 };
 </script>
@@ -35,37 +34,54 @@ const submitForm = async (event: any) => {
     <div class="prose">
       <h1>Create new Account</h1>
     </div>
-    <form @submit="submitForm">
-      <div class="form-group">
-        <label>Username</label>
-        <input v-model="username" type="text" id="username" />
-      </div>
+    <form @submit="submitForm" class="flex w-96 flex-col items-center gap-4">
+      <input
+        v-model="username"
+        required
+        type="text"
+        id="username"
+        placeholder="Username"
+        class="input input-bordered w-full"
+        :class="{ 'input-error': errorMessage }"
+      />
 
-      <div class="form-group">
-        <label>E-mail</label>
-        <input v-model="email" type="email" id="email" />
-      </div>
+      <input
+        v-model="email"
+        required
+        type="email"
+        id="email"
+        placeholder="E-Mail"
+        class="input input-bordered w-full"
+        :class="{ 'input-error': errorMessage }"
+      />
 
-      <div class="form-group">
-        <label>Password</label>
-        <input v-model="password" type="password" id="password" />
-      </div>
-      <div class="form-group">
-        <label>Password Confirmation</label>
-        <input
-          v-model="passwordConfirmation"
-          type="password"
-          id="passwordConfirmation"
-        />
-      </div>
+      <input
+        v-model="password"
+        required
+        type="password"
+        id="password"
+        placeholder="Password"
+        class="input input-bordered w-full"
+        :class="{ 'input-error': passwordError }"
+      />
 
-      <p v-if="errorMessage" class="text-error mt-4">
+      <input
+        v-model="passwordConfirmation"
+        required
+        type="password"
+        id="passwordConfirmation"
+        placeholder="Password Confirmation"
+        class="input input-bordered w-full"
+        :class="{ 'input-error': passwordError }"
+      />
+
+      <div class="text-error" v-if="errorMessage">
         {{ errorMessage }}
-      </p>
-      <p v-if="passwordError" class="text-error">{{ passwordError }}</p>
-      <button type="submit" class="btn btn-dark btn-lg btn-block">
-        Sign Up
-      </button>
+      </div>
+      <div class="text-error" v-if="passwordError">
+        {{ passwordError }}
+      </div>
+      <button type="submit" class="btn btn-primary w-1/2">Sign Up</button>
     </form>
   </div>
 </template>
