@@ -5,6 +5,7 @@ import {
   HandThumbDownIcon as DownIcon,
 } from "@heroicons/vue/24/solid";
 import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
+import { store } from "@/utils/store";
 
 const memes = ref<
   {
@@ -54,8 +55,9 @@ function updateVote(memeId: string, upvote: boolean) {
           <img :src="meme.base64" />
         </figure>
         <div class="card-body">
-          <div class="card-actions justify-between">
+          <div class="card-actions justify-evenly">
             <button
+              v-if="store.user"
               class="btn btn-circle btn-primary"
               :class="{
                 'btn-outline':
@@ -100,6 +102,7 @@ function updateVote(memeId: string, upvote: boolean) {
               }}
             </span>
             <button
+              v-if="store.user"
               class="btn btn-circle btn-primary"
               :class="{
                 'btn-outline':
