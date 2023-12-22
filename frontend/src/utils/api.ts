@@ -1,5 +1,6 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "../../../server";
+import { store } from "./store";
 
 const client = createTRPCProxyClient<AppRouter>({
   links: [
@@ -64,10 +65,22 @@ export function getUserVotes() {
 }
 
 export async function login(username: string, password: string) {
-  const token = await client.auth.login.query({ username, password });
-  localStorage.setItem("token", token);
+  const response = await client.auth.login.query({ username, password });
+  localStorage.setItem("token", response.token);
+  store.setUser(response.user);
 }
 
-export function register(username: string, email: string, password: string) {
-  return client.auth.register.mutate({ username, email, password });
+export async function register(
+  username: string,
+  email: string,
+  password: string,
+) {
+  const response = await client.auth.register.mutate({
+    username,
+    email,
+    password,
+  });
+  localStorage.setItem("token", response.token);
+
+  store.setUser(response.user);
 }

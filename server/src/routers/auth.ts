@@ -21,7 +21,13 @@ export const authRouter = router({
       if (!passwordMatch) throw new Error("Invalid username or password");
 
       const token = await createToken(user.id);
-      return token;
+      return {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+        },
+      };
     }),
   register: publicProcedure
     .input(
@@ -54,6 +60,12 @@ export const authRouter = router({
       });
 
       const token = await createToken(user.id);
-      return token;
+      return {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+        },
+      };
     }),
 });

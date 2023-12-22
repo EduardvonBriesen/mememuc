@@ -22,21 +22,16 @@ export const memeRouter = router({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const meme = await ctx.prisma.meme
-        .create({
-          data: {
-            user: {
-              connect: {
-                id: ctx.userId,
-              },
+      const meme = await ctx.prisma.meme.create({
+        data: {
+          user: {
+            connect: {
+              id: ctx.userId,
             },
-            base64: input.base64,
           },
-        })
-        .catch((e) => {
-          console.log(e);
-          throw e;
-        });
+          base64: input.base64,
+        },
+      });
 
       return meme;
     }),
