@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { privatProcedure, publicProcedure, router } from "../trpc";
 
 export const memeRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -15,31 +15,19 @@ export const memeRouter = router({
     const memes = await ctx.prisma.meme.findMany();
     return memes;
   }),
-  save: publicProcedure
+  save: privatProcedure
     .input(
       z.object({
-        username: z.string(),
         base64: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: handle user through auth
-      const userId = await ctx.prisma.user
-        .findFirst({
-          where: { username: input.username },
-        })
-        .then((user) => user?.id)
-        .catch((e) => {
-          console.log(e);
-          throw e;
-        });
-
       const meme = await ctx.prisma.meme
         .create({
           data: {
             user: {
               connect: {
-                id: userId,
+                id: ctx.userId,
               },
             },
             base64: input.base64,
@@ -52,18 +40,17 @@ export const memeRouter = router({
 
       return meme;
     }),
-  vote: publicProcedure
+  vote: privatProcedure
     .input(
       z.object({
         id: z.string(),
-        user: z.string(),
         upvote: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user.findFirst({
         where: {
-          username: input.user,
+          id: ctx.userId,
         },
       });
 

@@ -6,8 +6,6 @@ import {
 } from "@heroicons/vue/24/solid";
 import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
 
-const username = "test-user"; // TODO: get username from login
-
 const memes = ref<
   {
     id: string;
@@ -25,7 +23,7 @@ onMounted(async () => {
   getAllMemes().then((data) => {
     memes.value = data;
   });
-  getUserVotes(username).then((data) => {
+  getUserVotes().then((data) => {
     userVotes.value = Object.fromEntries(
       data.map((vote) => [vote.memeId, vote.upvote]),
     );
@@ -35,10 +33,10 @@ onMounted(async () => {
 function updateVote(memeId: string, upvote: boolean) {
   if (userVotes.value[memeId] === upvote) {
     userVotes.value[memeId] = undefined;
-    setUserVote(username, memeId);
+    setUserVote(memeId);
   } else {
     userVotes.value[memeId] = upvote;
-    setUserVote(username, memeId, upvote);
+    setUserVote(memeId, upvote);
   }
 }
 </script>

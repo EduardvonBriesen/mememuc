@@ -1,6 +1,7 @@
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { publicProcedure, router } from "../trpc";
+import { createToken } from "../utils/jwt";
 
 export const authRouter = router({
   login: publicProcedure
@@ -17,12 +18,10 @@ export const authRouter = router({
       }
 
       const passwordMatch = await bcrypt.compare(input.password, user.password);
+      if (!passwordMatch) throw new Error("Invalid username or password");
 
-      if (passwordMatch) {
-        return user;
-      } else {
-        throw new Error("Invalid username or password");
-      }
+      const token = await createToken(user.id);
+      return token;
     }),
   register: publicProcedure
     .input(
@@ -54,6 +53,7 @@ export const authRouter = router({
         },
       });
 
-      return user;
+      const token = await createToken(user.id);
+      return token;
     }),
 });
