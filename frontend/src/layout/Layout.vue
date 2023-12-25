@@ -22,9 +22,26 @@ function logout() {
       <router-link to="editor" class="btn btn-primary">
         Generate Meme
       </router-link>
-      <button class="btn btn-primary btn-outline" @click="logout">
-        Logout
-      </button>
+
+      <div class="dropdown dropdown-end">
+        <div
+          tabindex="0"
+          role="button"
+          class="btn btn-ghost btn-circle avatar placeholder"
+        >
+          <div class="bg-neutral text-neutral-content w-12 rounded-full">
+            <span>
+              {{ store.user?.username[0].toUpperCase() }}
+            </span>
+          </div>
+        </div>
+        <ul
+          tabindex="0"
+          class="menu menu-sm dropdown-content bg-neutral rounded-box z-[1] mt-3 w-32 p-2 shadow"
+        >
+          <li><button @click="logout">Logout</button></li>
+        </ul>
+      </div>
     </div>
   </div>
   <slot></slot>

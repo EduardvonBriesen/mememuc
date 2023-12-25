@@ -70,6 +70,12 @@ export async function login(username: string, password: string) {
   store.setUser(response.user);
 }
 
+export async function googleLogin(idToken: string) {
+  const response = await client.auth.googleLogin.query(idToken);
+  localStorage.setItem("token", response.token);
+  store.setUser(response.user);
+}
+
 export async function register(
   username: string,
   email: string,
