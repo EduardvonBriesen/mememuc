@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PlayfulText from "@/components/PlayfulText.vue";
 import router from "@/router";
 import { register } from "@/utils/api";
 import { ref } from "vue";
@@ -31,9 +32,7 @@ const submitForm = async (event: any) => {
 
 <template>
   <div class="flex w-full flex-col items-center gap-4 p-16">
-    <div class="prose">
-      <h1>Create new Account</h1>
-    </div>
+    <PlayfulText word="Register" />
     <form @submit="submitForm" class="flex w-96 flex-col items-center gap-4">
       <input
         v-model="username"

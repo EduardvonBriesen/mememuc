@@ -3,6 +3,7 @@ import { googleSdkLoaded } from "vue3-google-login";
 import router from "@/router";
 import { googleLogin, login } from "@/utils/api";
 import { ref } from "vue";
+import PlayfulText from "@/components/PlayfulText.vue";
 
 const username = ref("");
 const password = ref("");
@@ -43,9 +44,7 @@ function googleAuth() {
 
 <template>
   <div class="flex w-full flex-col items-center gap-4 p-16">
-    <div class="prose">
-      <h1>Login</h1>
-    </div>
+    <PlayfulText word="Login" />
     <div>
       <form @submit="onSubmit" class="flex w-96 flex-col items-center gap-4">
         <input

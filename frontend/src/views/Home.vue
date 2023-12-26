@@ -6,6 +6,7 @@ import {
 } from "@heroicons/vue/24/solid";
 import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
 import { store } from "@/utils/store";
+import PlayfulText from "@/components/PlayfulText.vue";
 
 const memes = ref<
   {
@@ -43,9 +44,9 @@ function updateVote(memeId: string, upvote: boolean) {
 </script>
 
 <template>
-  <div class="flex w-full flex-col items-center gap-4 p-16">
-    <div class="flex flex-col gap-4">
-      <h2>Recent Memes</h2>
+  <div class="flex w-full flex-col items-center gap-4">
+    <div class="flex flex-col items-center gap-4">
+      <PlayfulText word="Memes" />
       <div
         class="card bg-base-100 shadow-xl"
         v-for="meme in memes"
@@ -58,7 +59,7 @@ function updateVote(memeId: string, upvote: boolean) {
           <div class="card-actions justify-evenly">
             <button
               v-if="store.user"
-              class="btn btn-circle btn-primary"
+              class="btn btn-circle btn-error"
               :class="{
                 'btn-outline':
                   userVotes[meme.id] === undefined || userVotes[meme.id],
@@ -103,7 +104,7 @@ function updateVote(memeId: string, upvote: boolean) {
             </span>
             <button
               v-if="store.user"
-              class="btn btn-circle btn-primary"
+              class="btn btn-circle btn-success"
               :class="{
                 'btn-outline':
                   userVotes[meme.id] === undefined || !userVotes[meme.id],
