@@ -177,6 +177,28 @@ export const memeRouter = router({
         },
       });
 
-      return comments;
+      const users = await ctx.prisma.user
+        .findMany({
+          where: {
+            id: {
+              in: comments.map((comment) => comment.userId),
+            },
+          },
+        })
+        .then((users) =>
+          users.map((user) => ({
+            id: user.id,
+            username: user.username,
+          })),
+        );
+
+      const usersMap = new Map(users.map((user) => [user.id, user]));
+
+      const commentsWithUsers = comments.map((comment) => ({
+        ...comment,
+        username: usersMap.get(comment.userId)?.username ?? "Unknown",
+      }));
+
+      return commentsWithUsers;
     }),
 });
