@@ -8,9 +8,14 @@ function logout() {
 </script>
 
 <template>
-  <div class="navbar bg-base-100">
+  <div class="navbar bg-base-100 p-8">
     <div class="navbar-start flex gap-4">
-      <span class="prose"><h1>Meme Muc</h1></span>
+      <img
+        src="/logo.svg"
+        alt="logo"
+        class="h-20 cursor-pointer"
+        @click="$router.push('/')"
+      />
     </div>
     <div v-if="!store.user" class="navbar-end flex gap-4">
       <router-link to="login" class="btn btn-primary"> Login </router-link>
