@@ -12,7 +12,7 @@ const routes = [
   { path: "/register", component: Register },
   { path: "/login", component: Login },
   // { path: "/memes", component: Memes },
-  { path: "/memes/:memeId", component: Memes },
+  { path: "/meme/:memeId", component: Memes },
 ];
 
 const router = createRouter({
