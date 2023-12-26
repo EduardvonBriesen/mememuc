@@ -52,7 +52,10 @@ function updateVote(memeId: string, upvote: boolean) {
         v-for="meme in memes"
         :key="meme.id"
       >
-        <figure>
+        <figure
+          @click="$router.push(`/meme/${meme.id}`)"
+          class="cursor-pointer"
+        >
           <img :src="meme.base64" />
         </figure>
         <div class="card-body">

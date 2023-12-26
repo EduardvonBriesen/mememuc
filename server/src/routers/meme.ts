@@ -142,4 +142,63 @@ export const memeRouter = router({
         },
       });
     }),
+  comment: privatProcedure
+    .input(
+      z.object({
+        memeId: z.string(),
+        comment: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const comment = await ctx.prisma.comment.create({
+        data: {
+          user: {
+            connect: {
+              id: ctx.userId,
+            },
+          },
+          meme: {
+            connect: {
+              id: input.memeId,
+            },
+          },
+          text: input.comment,
+        },
+      });
+
+      return comment;
+    }),
+  getComments: publicProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const comments = await ctx.prisma.comment.findMany({
+        where: {
+          memeId: input,
+        },
+      });
+
+      const users = await ctx.prisma.user
+        .findMany({
+          where: {
+            id: {
+              in: comments.map((comment) => comment.userId),
+            },
+          },
+        })
+        .then((users) =>
+          users.map((user) => ({
+            id: user.id,
+            username: user.username,
+          })),
+        );
+
+      const usersMap = new Map(users.map((user) => [user.id, user]));
+
+      const commentsWithUsers = comments.map((comment) => ({
+        ...comment,
+        username: usersMap.get(comment.userId)?.username ?? "Unknown",
+      }));
+
+      return commentsWithUsers;
+    }),
 });

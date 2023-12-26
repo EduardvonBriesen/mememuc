@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import router from "@/router";
 import { store } from "@/utils/store";
 
 function logout() {
   localStorage.removeItem("token");
   store.setUser(null);
+  router.push("/");
 }
 </script>
 
@@ -18,13 +20,13 @@ function logout() {
       />
     </div>
     <div v-if="!store.user" class="navbar-end flex gap-4">
-      <router-link to="login" class="btn btn-primary"> Login </router-link>
-      <router-link to="register" class="btn btn-primary btn-outline">
+      <router-link to="/login" class="btn btn-primary"> Login </router-link>
+      <router-link to="/register" class="btn btn-primary btn-outline">
         Sign up
       </router-link>
     </div>
     <div v-if="store.user" class="navbar-end flex gap-4">
-      <router-link to="editor" class="btn btn-primary">
+      <router-link to="/editor" class="btn btn-primary">
         Generate Meme
       </router-link>
 

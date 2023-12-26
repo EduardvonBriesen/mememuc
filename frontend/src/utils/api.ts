@@ -64,6 +64,14 @@ export function getUserVotes() {
   return client.user.getVotes.query();
 }
 
+export function getComments(memeId: string) {
+  return client.meme.getComments.query(memeId);
+}
+
+export function createComment(memeId: string, comment: string) {
+  return client.meme.comment.mutate({ memeId, comment });
+}
+
 export async function login(username: string, password: string) {
   const response = await client.auth.login.query({ username, password });
   localStorage.setItem("token", response.token);

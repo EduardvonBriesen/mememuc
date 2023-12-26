@@ -153,7 +153,7 @@ function generateMemeWithPrompt() {
 }
 
 function openMemeSingleView(memeId: string) {
-  router.push(`/memes/${memeId}`);
+  router.push(`/meme/${memeId}`);
 }
 </script>
 
