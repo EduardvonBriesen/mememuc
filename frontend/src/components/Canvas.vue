@@ -12,8 +12,6 @@ import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 import { createMeme } from "@/utils/api";
 
-const username = "test-user"; // TODO: get username from login
-
 const can = ref(null);
 
 let canvas: fabric.Canvas;
@@ -129,7 +127,7 @@ function generateMeme(targetFileSizeKB: number) {
     }
 
     //save image to mongoDB database
-    createMeme(username, dataUrl).then((res) => {
+    createMeme(dataUrl).then((res) => {
       console.log(res);
       openMemeSingleView(res.id);
     });

@@ -4,6 +4,7 @@ import Register from "@/views/Register.vue";
 import Login from "@/views/Login.vue";
 import Memes from "@/views/Memes.vue";
 import { createRouter, createWebHistory } from "vue-router";
+import { store } from "@/utils/store";
 
 const routes = [
   { path: "/", component: Home },
@@ -17,6 +18,12 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach((to) => {
+  if (to.path === "/editor" && !store.user) {
+    return "/login";
+  }
 });
 
 export default router;

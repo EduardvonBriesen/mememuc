@@ -1,34 +1,39 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "../../../server";
+import { store } from "./store";
 
 const client = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
       url: "http://localhost:3000",
+      async headers() {
+        const token = localStorage.getItem("token");
+        return {
+          authorization: token ? `Bearer ${token}` : "",
+        };
+      },
     }),
   ],
 });
 
-export function getUserTemplates(user: string, origin?: "upload" | "camera") {
-  return client.user.getUserTemplates.query({ username: user, origin });
+export function getUserTemplates(origin: "upload" | "camera") {
+  return client.user.getUserTemplates.query({ origin });
 }
 
 export function uploadUserTemplate(
-  user: string,
   name: string,
   base64: string,
   origin: "upload" | "camera",
 ) {
   return client.user.uploadTemplate.mutate({
-    username: user,
+    base64,
     origin,
     name,
-    base64,
   });
 }
 
-export function deleteUserTemplate(user: string, id: string) {
-  return client.user.deleteTemplate.mutate({ username: user, id });
+export function deleteUserTemplate(id: string) {
+  return client.user.deleteTemplate.mutate({ id });
 }
 
 export function getAllTemplates() {
@@ -47,26 +52,41 @@ export function getAllMemes() {
   return client.meme.all.query();
 }
 
-export function createMeme(username: string, base64: string) {
-  return client.meme.save.mutate({ username, base64 });
+export function createMeme(base64: string) {
+  return client.meme.save.mutate({ base64 });
 }
 
-export function login(username: string, password: string) {
-  return client.auth.login.query({ username, password });
+export function setUserVote(memeId: string, upvote?: boolean) {
+  return client.meme.vote.mutate({ id: memeId, upvote });
 }
 
-export function register(username: string, email: string, password: string) {
-  return client.auth.register.mutate({ username, email, password });
+export function getUserVotes() {
+  return client.user.getVotes.query();
 }
 
-export function setUserVote(
+export async function login(username: string, password: string) {
+  const response = await client.auth.login.query({ username, password });
+  localStorage.setItem("token", response.token);
+  store.setUser(response.user);
+}
+
+export async function googleLogin(idToken: string) {
+  const response = await client.auth.googleLogin.query(idToken);
+  localStorage.setItem("token", response.token);
+  store.setUser(response.user);
+}
+
+export async function register(
   username: string,
-  memeId: string,
-  upvote?: boolean,
+  email: string,
+  password: string,
 ) {
-  return client.meme.vote.mutate({ user: username, id: memeId, upvote });
-}
+  const response = await client.auth.register.mutate({
+    username,
+    email,
+    password,
+  });
+  localStorage.setItem("token", response.token);
 
-export function getUserVotes(username: string) {
-  return client.user.getVotes.query({ username });
+  store.setUser(response.user);
 }

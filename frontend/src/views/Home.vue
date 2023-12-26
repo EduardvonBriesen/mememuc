@@ -5,8 +5,7 @@ import {
   HandThumbDownIcon as DownIcon,
 } from "@heroicons/vue/24/solid";
 import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
-
-const username = "test-user"; // TODO: get username from login
+import { store } from "@/utils/store";
 
 const memes = ref<
   {
@@ -25,7 +24,7 @@ onMounted(async () => {
   getAllMemes().then((data) => {
     memes.value = data;
   });
-  getUserVotes(username).then((data) => {
+  getUserVotes().then((data) => {
     userVotes.value = Object.fromEntries(
       data.map((vote) => [vote.memeId, vote.upvote]),
     );
@@ -35,28 +34,16 @@ onMounted(async () => {
 function updateVote(memeId: string, upvote: boolean) {
   if (userVotes.value[memeId] === upvote) {
     userVotes.value[memeId] = undefined;
-    setUserVote(username, memeId);
+    setUserVote(memeId);
   } else {
     userVotes.value[memeId] = upvote;
-    setUserVote(username, memeId, upvote);
+    setUserVote(memeId, upvote);
   }
 }
 </script>
 
 <template>
   <div class="flex w-full flex-col items-center gap-4 p-16">
-    <div class="prose">
-      <h1>Meme Muc</h1>
-      <p>
-        This is a meme generator for the Online Multimedia lecture at LMU
-        Munich.
-      </p>
-    </div>
-    <router-link to="editor" class="btn btn-primary">Generate Meme</router-link>
-    <router-link to="register" class="btn btn-primary"
-      >Register new Account</router-link
-    >
-    <router-link to="login" class="btn btn-primary">Login</router-link>
     <div class="flex flex-col gap-4">
       <h2>Recent Memes</h2>
       <div
@@ -68,8 +55,9 @@ function updateVote(memeId: string, upvote: boolean) {
           <img :src="meme.base64" />
         </figure>
         <div class="card-body">
-          <div class="card-actions justify-between">
+          <div class="card-actions justify-evenly">
             <button
+              v-if="store.user"
               class="btn btn-circle btn-primary"
               :class="{
                 'btn-outline':
@@ -114,6 +102,7 @@ function updateVote(memeId: string, upvote: boolean) {
               }}
             </span>
             <button
+              v-if="store.user"
               class="btn btn-circle btn-primary"
               :class="{
                 'btn-outline':

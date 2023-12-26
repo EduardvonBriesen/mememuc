@@ -23,12 +23,11 @@ const dimensions = {
   width: 450,
   height: 337,
 };
-const username = "test-user";
 
 onMounted(() => {
   createCameraElement();
 
-  getUserTemplates(username, "camera").then((data) => {
+  getUserTemplates("camera").then((data) => {
     userTemplates.value = data.map((template) => ({
       id: template.id,
       name: template.name,
@@ -78,9 +77,9 @@ const downloadImage = () => {
   if (!canvas.value) return;
 
   const base64 = canvas.value.toDataURL("image/png");
-  const name = `${Date.now()}.png`;
+  const name = `${userTemplates.value.length + 1}.png`;
 
-  uploadUserTemplate(username, name, base64, "camera").then(() => {
+  uploadUserTemplate(name, base64, "camera").then(() => {
     props.setTemplate(base64);
     userTemplates.value.push({
       id: name,
@@ -91,7 +90,7 @@ const downloadImage = () => {
 };
 
 async function handleFileDelete(id: string) {
-  deleteUserTemplate(username, id).then(() => {
+  deleteUserTemplate(id).then(() => {
     userTemplates.value = userTemplates.value.filter(
       (template) => template.id !== id,
     );
@@ -149,7 +148,7 @@ async function handleFileDelete(id: string) {
     :templates="userTemplates"
     :onClick="
       (id: string) =>
-        setTemplate(`http://localhost:3001/users/img/${username}/${id}`)
+        setTemplate(userTemplates.find((template) => template.id === id)!.src)
     "
     :onDelete="handleFileDelete"
   />

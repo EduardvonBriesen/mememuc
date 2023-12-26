@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ObjectId } from "bson";
-import { publicProcedure, router } from "../trpc";
+import { privatProcedure, publicProcedure, router } from "../trpc";
 
 export const userRouter = router({
   all: publicProcedure.query(({ ctx }) => {
@@ -22,17 +22,16 @@ export const userRouter = router({
 
       return user;
     }),
-  getUserTemplates: publicProcedure
+  getUserTemplates: privatProcedure
     .input(
       z.object({
-        username: z.string(),
-        origin: z.string().optional(),
+        origin: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const user = await ctx.prisma.user
         .findFirst({
-          where: { username: input.username },
+          where: { id: ctx.userId },
         })
         .then((user) => user);
 
@@ -46,10 +45,9 @@ export const userRouter = router({
 
       return templates;
     }),
-  uploadTemplate: publicProcedure
+  uploadTemplate: privatProcedure
     .input(
       z.object({
-        username: z.string(),
         origin: z.string(),
         name: z.string(),
         base64: z.string(),
@@ -58,7 +56,7 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user
         .findFirst({
-          where: { username: input.username },
+          where: { id: ctx.userId },
         })
         .then((user) => user);
 
@@ -88,17 +86,16 @@ export const userRouter = router({
 
       return id;
     }),
-  deleteTemplate: publicProcedure
+  deleteTemplate: privatProcedure
     .input(
       z.object({
-        username: z.string(),
         id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.prisma.user
         .findFirst({
-          where: { username: input.username },
+          where: { id: ctx.userId },
         })
         .then((user) => user);
 
@@ -128,23 +125,17 @@ export const userRouter = router({
 
       return;
     }),
-  getVotes: publicProcedure
-    .input(
-      z.object({
-        username: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user
-        .findFirst({
-          where: { username: input.username },
-        })
-        .then((user) => user);
+  getVotes: privatProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user
+      .findFirst({
+        where: { id: ctx.userId },
+      })
+      .then((user) => user);
 
-      if (!user) {
-        throw new Error("User not found");
-      }
+    if (!user) {
+      throw new Error("User not found");
+    }
 
-      return user.votes;
-    }),
+    return user.votes;
+  }),
 });

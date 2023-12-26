@@ -7,8 +7,6 @@ import {
   deleteUserTemplate,
 } from "@/utils/api";
 
-const username = "test-user"; // TODO: get username from login
-
 interface Props {
   setTemplate: (id: string) => void;
 }
@@ -19,7 +17,7 @@ const file = ref();
 const userTemplates = ref<{ id: string; name: string; src: string }[]>([]);
 
 onMounted(async () => {
-  getUserTemplates(username, "upload").then((data) => {
+  getUserTemplates("upload").then((data) => {
     userTemplates.value = data.map((template) => ({
       id: template.id,
       name: template.name,
@@ -43,16 +41,14 @@ async function handleFileUpload(event: Event) {
 
     console.log(base64String);
 
-    uploadUserTemplate(username, file.value.name, base64String, "upload").then(
-      () => {
-        props.setTemplate(base64String);
-        userTemplates.value.push({
-          id: file.value.name,
-          name: file.value.name,
-          src: base64String,
-        });
-      },
-    );
+    uploadUserTemplate(file.value.name, base64String, "upload").then(() => {
+      props.setTemplate(base64String);
+      userTemplates.value.push({
+        id: file.value.name,
+        name: file.value.name,
+        src: base64String,
+      });
+    });
   };
 
   reader.onerror = (error) => {
@@ -64,7 +60,7 @@ async function handleFileUpload(event: Event) {
 }
 
 async function handleFileDelete(id: string) {
-  deleteUserTemplate(username, id).then(() => {
+  deleteUserTemplate(id).then(() => {
     userTemplates.value = userTemplates.value.filter(
       (template) => template.id !== id,
     );
@@ -92,7 +88,7 @@ async function handleFileDelete(id: string) {
     :templates="userTemplates"
     :onClick="
       (id: string) =>
-        setTemplate(`http://localhost:3001/users/img/${username}/${id}`)
+        setTemplate(userTemplates.find((template) => template.id === id)!.src)
     "
     :onDelete="handleFileDelete"
   />

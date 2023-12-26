@@ -16,9 +16,12 @@
     "@prisma/client": "^5.7.0",
     "@trpc/server": "^10.44.1",
     "@types/cors": "^2.8.16",
+    "axios": "^1.6.2",
     "bcrypt": "^5.1.1",
     "bson": "^6.2.0",
     "cors": "^2.8.5",
+    "jose": "^5.1.3",
+    "vue-google-oauth2": "^1.5.10",
     "zod": "^3.22.4"
   },
   "devDependencies": {
