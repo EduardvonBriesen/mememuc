@@ -21,6 +21,9 @@ let canvas: fabric.Canvas;
 // New variable for locking/unlocking resizing
 const isResizingLocked = ref(true);
 
+// New variable for locking/unlocking resizing and movement
+const isLocked = ref(true);
+
 // New variables for resizing
 let resizing = false;
 let lastPosX = 0;
@@ -204,6 +207,13 @@ function openMemeSingleView(memeId: string) {
 
 function toggleLock() {
   isResizingLocked.value = !isResizingLocked.value;
+  canvas.forEachObject((obj) => {
+    obj.selectable = !isResizingLocked.value;
+    obj.hasControls = !isResizingLocked.value;
+    obj.lockMovementX = !isLocked.value;
+    obj.lockMovementY = !isLocked.value;
+  });
+  canvas.renderAll(); // Re-render the canvas to apply the changes
 }
 
 function startResizing(e: MouseEvent) {
