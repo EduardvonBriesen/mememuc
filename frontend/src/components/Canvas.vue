@@ -18,6 +18,9 @@ const can = ref(null);
 
 let canvas: fabric.Canvas;
 
+// New variable for locking/unlocking resizing
+const isResizingLocked = ref(true);
+
 // New variables for resizing
 let resizing = false;
 let lastPosX = 0;
@@ -199,7 +202,12 @@ function openMemeSingleView(memeId: string) {
   router.push(`/memes/${memeId}`);
 }
 
+function toggleLock() {
+  isResizingLocked.value = !isResizingLocked.value;
+}
+
 function startResizing(e: MouseEvent) {
+  if (isResizingLocked.value) return; // Disable resizing if locked
   resizing = true;
   lastPosX = e.clientX;
   lastPosY = e.clientY;
@@ -245,6 +253,9 @@ function stopResizing() {
       >
         Add Brush
         <BrushIcon class="h-6 w-6" />
+      </button>
+      <button class="btn btn-primary w-48" @click="toggleLock">
+        {{ isResizingLocked ? "Unlock Resizing" : "Lock Resizing" }}
       </button>
     </div>
 
