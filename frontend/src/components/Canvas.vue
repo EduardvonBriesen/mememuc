@@ -49,6 +49,11 @@ onMounted(async () => {
   applyLockStateToObjects();
 });
 
+function clearCanvas() {
+  canvas.clear();
+  // other necessary cleanup or reinitialization
+}
+
 function applyLockStateToObjects() {
   canvas.forEachObject((obj) => {
     obj.selectable = !resizeLocked.value;
@@ -288,6 +293,7 @@ function toggleResizeLock() {
       <TemplateControl
         :setTemplate="setTemplate"
         :setDrawingMode="setDrawingMode"
+        @clearCanvas="clearCanvas"
       />
       <div class="card bg-neutral h-fit w-fit">
         <div class="card-body">
@@ -313,7 +319,7 @@ function toggleResizeLock() {
           Generate Meme
         </button>
         <button class="btn btn-secondary w-48" @click="toggleResizeLock">
-          {{ resizeLocked.valueOf() ? "Unlock Resizing" : "Lock Resizing" }}
+          {{ resizeLocked.valueOf() ? "Unlock Canvas" : "Lock Canvas" }}
         </button>
       </div>
     </div>
