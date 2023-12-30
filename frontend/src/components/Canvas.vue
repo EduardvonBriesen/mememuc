@@ -16,15 +16,11 @@ const username = "test-user"; // TODO: get username from login
 
 const can = ref(null);
 
+const resizeLocked = ref(true); // Initially locked
+
 let canvas: fabric.Canvas;
 
-// New variable for locking/unlocking resizing
-const isResizingLocked = ref(true);
-
-// New variable for locking/unlocking resizing and movement
-const isLocked = ref(true);
-
-// New variables for resizing
+//resize varibales
 let resizing = false;
 let lastPosX = 0;
 let lastPosY = 0;
@@ -48,7 +44,17 @@ onMounted(async () => {
   canvas.on("selection:cleared", () => {
     activeObject.value = null;
   });
+
+  // Apply initial lock state to existing canvas objects
+  applyLockStateToObjects();
 });
+
+function applyLockStateToObjects() {
+  canvas.forEachObject((obj) => {
+    obj.selectable = !resizeLocked.value;
+    obj.evented = !resizeLocked.value;
+  });
+}
 
 function addText() {
   const text = new fabric.IText("hello world", {
@@ -57,6 +63,10 @@ function addText() {
   });
   canvas.add(text);
   canvas.setActiveObject(text);
+
+  // Possiblility to lock text with the resize lock
+  // text.selectable = !resizeLocked.value;
+  // text.evented = !resizeLocked.value;
 }
 
 async function setTemplate(url: string) {
@@ -97,6 +107,10 @@ async function setTemplate(url: string) {
 
     canvas.add(fabricImg);
     canvas.setActiveObject(fabricImg);
+
+    // Apply lock state to the new image object
+    fabricImg.selectable = !resizeLocked.value;
+    fabricImg.evented = !resizeLocked.value;
   };
 
   img.onerror = function (error) {
@@ -205,19 +219,9 @@ function openMemeSingleView(memeId: string) {
   router.push(`/memes/${memeId}`);
 }
 
-function toggleLock() {
-  isResizingLocked.value = !isResizingLocked.value;
-  canvas.forEachObject((obj) => {
-    obj.selectable = !isResizingLocked.value;
-    obj.hasControls = !isResizingLocked.value;
-    obj.lockMovementX = !isLocked.value;
-    obj.lockMovementY = !isLocked.value;
-  });
-  canvas.renderAll(); // Re-render the canvas to apply the changes
-}
-
 function startResizing(e: MouseEvent) {
-  if (isResizingLocked.value) return; // Disable resizing if locked
+  if (resizeLocked.value) return; // Prevent resizing if locked
+
   resizing = true;
   lastPosX = e.clientX;
   lastPosY = e.clientY;
@@ -226,7 +230,7 @@ function startResizing(e: MouseEvent) {
 }
 
 function resizeCanvas(e: MouseEvent) {
-  if (!resizing) return;
+  if (!resizing || resizeLocked.value) return; // Check lock state
   const dx = e.clientX - lastPosX;
   const dy = e.clientY - lastPosY;
   if (
@@ -243,9 +247,23 @@ function resizeCanvas(e: MouseEvent) {
 }
 
 function stopResizing() {
+  if (resizeLocked.value) return; // Check lock state
+
   resizing = false;
   document.removeEventListener("mousemove", resizeCanvas);
   document.removeEventListener("mouseup", stopResizing);
+}
+
+function toggleResizeLock() {
+  resizeLocked.value = !resizeLocked.value;
+
+  // Update the selectable and evented properties for all canvas objects
+  canvas.forEachObject((obj) => {
+    obj.selectable = !resizeLocked.value;
+    obj.evented = !resizeLocked.value;
+  });
+
+  canvas.renderAll(); // Re-render the canvas to apply changes
 }
 </script>
 
@@ -263,9 +281,6 @@ function stopResizing() {
       >
         Add Brush
         <BrushIcon class="h-6 w-6" />
-      </button>
-      <button class="btn btn-primary w-48" @click="toggleLock">
-        {{ isResizingLocked ? "Unlock Resizing" : "Lock Resizing" }}
       </button>
     </div>
 
@@ -296,6 +311,9 @@ function stopResizing() {
       <div class="flex justify-center gap-4">
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
           Generate Meme
+        </button>
+        <button class="btn btn-secondary w-48" @click="toggleResizeLock">
+          {{ resizeLocked.valueOf() ? "Unlock Resizing" : "Lock Resizing" }}
         </button>
       </div>
     </div>
