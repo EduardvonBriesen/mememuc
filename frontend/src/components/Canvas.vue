@@ -10,7 +10,7 @@ import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
-import { createMeme } from "@/utils/api";
+import { createMeme, saveDraft } from "@/utils/api";
 
 const can = ref(null);
 
@@ -155,6 +155,13 @@ function generateMemeWithPrompt() {
 function openMemeSingleView(memeId: string) {
   router.push(`/meme/${memeId}`);
 }
+
+function saveDraftHandler() {
+  const serializedCanvas = JSON.stringify(canvas);
+  const name = window.prompt("Enter a name for your draft:", "My Draft");
+  if (!name) return;
+  saveDraft(name, serializedCanvas);
+}
 </script>
 
 <template>
@@ -188,6 +195,9 @@ function openMemeSingleView(memeId: string) {
       <div class="flex justify-center gap-4">
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
           Generate Meme
+        </button>
+        <button class="btn btn-primary w-48" @click="saveDraftHandler">
+          Save Draft
         </button>
       </div>
     </div>

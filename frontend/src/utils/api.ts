@@ -72,6 +72,18 @@ export function createComment(memeId: string, comment: string) {
   return client.meme.comment.mutate({ memeId, comment });
 }
 
+export function saveDraft(name: string, serializedCanvas: string) {
+  return client.user.saveDraft.mutate({ name, serializedCanvas });
+}
+
+export function getDrafts() {
+  return client.user.getDrafts.query();
+}
+
+export function deleteDraft(id: string) {
+  return client.user.deleteDraft.mutate({ id });
+}
+
 export async function login(username: string, password: string) {
   const response = await client.auth.login.query({ username, password });
   localStorage.setItem("token", response.token);
