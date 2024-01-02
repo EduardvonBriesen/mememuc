@@ -12,13 +12,14 @@ import {
   GlobeAltIcon as GlobeIcon,
   PlusIcon,
 } from "@heroicons/vue/24/solid";
-import { getAllTemplates } from "@/utils/api";
 import TemplateUpload from "./TemplateUpload.vue";
 import TemplateBrowse from "./TemplateBrowse.vue";
 import TemplateCamera from "./TemplateCamera.vue";
 import TemplateOnline from "./TemplateOnline.vue";
+import { getAllTemplates, getTemplateImage } from "@/utils/api";
 
 interface Props {
+  initTemplate: boolean;
   setTemplate: (id: string) => void;
   setDrawingMode: (value: boolean) => void;
 }
@@ -30,7 +31,7 @@ const cameraModalOpen = ref(false);
 const pasteModalOpen = ref(false);
 const emit = defineEmits(["clearCanvas"]);
 
-const templates = ref<{ id: string; name: string; url: string }[]>([]);
+const templates = ref<{ id: string; name: string }[]>([]);
 const index = ref(0);
 const pasteUrl = ref("");
 
@@ -41,12 +42,18 @@ onMounted(async () => {
     templates.value = data.map((template) => ({
       id: template.id,
       name: template.name,
-      url: `http://localhost:3001/template/img/${template.id}`,
     }));
   });
 
+  console.log(props);
+
+  if (!props.initTemplate) return;
+
   index.value = Math.floor(Math.random() * templates.value.length);
-  props.setTemplate(templates.value[index.value].url);
+
+  const src = await getTemplateImage(templates.value[index.value].id);
+
+  props.setTemplate(src);
 });
 
 function goToPrevious() {
@@ -55,7 +62,11 @@ function goToPrevious() {
   if (index.value < 0) {
     index.value = templates.value.length - 1;
   }
-  props.setTemplate(templates.value[index.value].url);
+  async function setTemplateImage() {
+    props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+  }
+
+  setTemplateImage();
 }
 
 async function goToNext() {
@@ -64,13 +75,13 @@ async function goToNext() {
   if (index.value >= templates.value.length) {
     index.value = 0;
   }
-  props.setTemplate(templates.value[index.value].url);
+  props.setTemplate(await getTemplateImage(templates.value[index.value].id));
 }
 
 async function goToRandom() {
   emit("clearCanvas");
   index.value = Math.floor(Math.random() * templates.value.length);
-  props.setTemplate(templates.value[index.value].url);
+  props.setTemplate(await getTemplateImage(templates.value[index.value].id));
 }
 
 async function drawTemplate() {
@@ -216,3 +227,4 @@ async function drawTemplate() {
     </button>
   </div>
 </template>
+@/utils/api

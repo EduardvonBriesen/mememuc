@@ -8,11 +8,9 @@ import {
 } from "@heroicons/vue/24/solid";
 import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
-//import TemplateGeneration from "@/components/TemplateGeneration.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
-
-const username = "test-user"; // TODO: get username from login
+import { createMeme, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
 const can = ref(null);
 
@@ -31,7 +29,18 @@ const drawingMode = ref(false);
 const router = useRouter();
 
 onMounted(async () => {
+  const draftId = router.currentRoute.value.params.draftId as string;
+
   canvas = new fabric.Canvas(can.value);
+
+  if (draftId) {
+    const draft = await getDraft(draftId);
+    canvas.loadFromJSON(draft.serializedCanvas, () => {
+      canvas.renderAll();
+      canvas.setWidth(draft.width);
+      canvas.setHeight(draft.height);
+    });
+  }
 
   canvas.on("selection:created", (e: any) => {
     activeObject.value = e.selected[0];
@@ -74,8 +83,8 @@ function addText() {
   // text.evented = !resizeLocked.value;
 }
 
-async function setTemplate(url: string) {
-  if (url === "") {
+async function setTemplate(src: string) {
+  if (src === "") {
     canvas.clear();
     canvas.setBackgroundColor("white", () => {
       canvas.setDimensions({ width: 500, height: 500 });
@@ -122,7 +131,7 @@ async function setTemplate(url: string) {
     console.error("Error loading image:", error);
   };
 
-  img.src = url;
+  img.src = src;
 }
 
 function setDrawingMode(value: boolean) {
@@ -162,8 +171,11 @@ function generateMeme(targetFileSizeKB: number) {
       return;
     }
 
-    // Save the image to the database
-    saveMemeToDb(dataUrl);
+    //save image to mongoDB database
+    createMeme(dataUrl).then((res) => {
+      console.log(res);
+      openMemeSingleView(res.id);
+    });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
     console.log("Meme generated with quality:", quality);
   } else {
@@ -185,43 +197,28 @@ function generateMemeWithPrompt() {
   generateMeme(targetFileSizeKB);
 }
 
-async function saveMemeToDb(dataUrl: string) {
-  try {
-    const base64Data = dataUrl.split(",")[1];
-    const imageType = dataUrl.split(";")[0].split(":")[1];
-
-    // Get the current timestamp
-    const timestamp = new Date().getTime();
-    // console.log("Timestamp:", timestamp);
-
-    const response = await fetch("http://localhost:3001/memes/save", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        memeData: base64Data,
-        type: imageType,
-        timestamp: timestamp,
-        username: username,
-      }),
-    });
-
-    if (response.ok) {
-      const result = await response.json();
-      console.log("Meme saved to MongoDB. Meme ID:", result.memeId);
-      openMemeSingleView(result.memeId);
-    } else {
-      console.error("Failed to save meme to MongoDB");
-      console.error("Error:", response);
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  }
+function openMemeSingleView(memeId: string) {
+  router.push(`/meme/${memeId}`);
 }
 
-function openMemeSingleView(memeId: string) {
-  router.push(`/memes/${memeId}`);
+function saveDraftHandler() {
+  const draftId = router.currentRoute.value.params.draftId as string;
+
+  if (draftId) {
+    const serializedCanvas = JSON.stringify(canvas);
+    updateDraft(
+      draftId,
+      serializedCanvas,
+      canvas.getWidth(),
+      canvas.getHeight(),
+    );
+    return;
+  }
+
+  const serializedCanvas = JSON.stringify(canvas);
+  const name = window.prompt("Enter a name for your draft:", "My Draft");
+  if (!name) return;
+  saveDraft(name, serializedCanvas, canvas.getWidth(), canvas.getHeight());
 }
 
 function startResizing(e: MouseEvent) {
@@ -291,6 +288,7 @@ function toggleResizeLock() {
 
     <div class="flex w-fit flex-col justify-center gap-4">
       <TemplateControl
+        :init-template="!router.currentRoute.value.params.draftId"
         :setTemplate="setTemplate"
         :setDrawingMode="setDrawingMode"
         @clearCanvas="clearCanvas"
@@ -320,6 +318,10 @@ function toggleResizeLock() {
         </button>
         <button class="btn btn-secondary w-48" @click="toggleResizeLock">
           {{ resizeLocked.valueOf() ? "Unlock Canvas" : "Lock Canvas" }}
+        </button>
+
+        <button class="btn btn-primary w-48" @click="saveDraftHandler">
+          Save Draft
         </button>
       </div>
     </div>
