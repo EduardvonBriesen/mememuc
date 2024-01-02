@@ -3,25 +3,6 @@ import { ObjectId } from "bson";
 import { privatProcedure, publicProcedure, router } from "../trpc";
 
 export const userRouter = router({
-  all: publicProcedure.query(({ ctx }) => {
-    const users = ctx.prisma.user.findMany().then((users) => users);
-    return users;
-  }),
-  getUserByName: publicProcedure
-    .input(z.object({ username: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user
-        .findFirst({
-          where: { username: input.username },
-        })
-        .then((user) => user);
-
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      return user;
-    }),
   getUserTemplates: privatProcedure
     .input(
       z.object({
@@ -138,4 +119,80 @@ export const userRouter = router({
 
     return user.votes;
   }),
+  saveDraft: privatProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        serializedCanvas: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user
+        .findFirst({
+          where: { id: ctx.userId },
+        })
+        .then((user) => user);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      await ctx.prisma.draft.create({
+        data: {
+          name: input.name,
+          serializedCanvas: input.serializedCanvas,
+          user: {
+            connect: {
+              id: ctx.userId,
+            },
+          },
+        },
+      });
+
+      return;
+    }),
+  getDrafts: privatProcedure.query(async ({ ctx }) => {
+    const user = await ctx.prisma.user
+      .findFirst({
+        where: { id: ctx.userId },
+      })
+      .then((user) => user);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const drafts = await ctx.prisma.draft.findMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    return drafts;
+  }),
+  deleteDraft: privatProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user
+        .findFirst({
+          where: { id: ctx.userId },
+        })
+        .then((user) => user);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      await ctx.prisma.draft.delete({
+        where: {
+          id: input.id,
+        },
+      });
+
+      return;
+    }),
 });
