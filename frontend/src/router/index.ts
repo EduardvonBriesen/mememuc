@@ -10,6 +10,7 @@ import { store } from "@/utils/store";
 const routes = [
   { path: "/", component: Home },
   { path: "/editor", component: Editor },
+  { path: "/editor/:draftId", component: Editor },
   { path: "/register", component: Register },
   { path: "/login", component: Login },
   // { path: "/memes", component: Memes },

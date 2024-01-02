@@ -72,12 +72,40 @@ export function createComment(memeId: string, comment: string) {
   return client.meme.comment.mutate({ memeId, comment });
 }
 
-export function saveDraft(name: string, serializedCanvas: string) {
-  return client.user.saveDraft.mutate({ name, serializedCanvas });
+export function saveDraft(
+  name: string,
+  serializedCanvas: string,
+  width: number,
+  height: number,
+) {
+  return client.user.saveDraft.mutate({
+    name,
+    serializedCanvas,
+    width,
+    height,
+  });
 }
 
-export function getDrafts() {
-  return client.user.getDrafts.query();
+export function updateDraft(
+  id: string,
+  serializedCanvas: string,
+  width: number,
+  height: number,
+) {
+  return client.user.updateDraft.mutate({
+    id,
+    serializedCanvas,
+    width,
+    height,
+  });
+}
+
+export function getAllDrafts() {
+  return client.user.getAllDrafts.query();
+}
+
+export function getDraft(id: string) {
+  return client.user.getDraft.query({ id });
 }
 
 export function deleteDraft(id: string) {

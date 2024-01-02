@@ -1,20 +1,17 @@
 <script setup lang="ts">
-import { getDrafts } from "@/utils/api";
+import { getAllDrafts } from "@/utils/api";
 import { Ref, onMounted, ref } from "vue";
 
 const drafts: Ref<
   {
     id: string;
-    userId: string;
     name: string;
-    serializedCanvas: string;
     timestamp: string;
   }[]
 > = ref([]);
 
-onMounted(async () => {
-  await getDrafts().then((data) => {
-    console.log(data);
+onMounted(() => {
+  getAllDrafts().then((data) => {
     drafts.value = data;
   });
 });
@@ -31,10 +28,16 @@ onMounted(async () => {
           </span>
         </div>
         <div class="flex flex-row gap-2">
-          <button class="btn btn-primary">Edit</button>
+          <button
+            @click="() => $router.push(`/editor/${draft.id}`)"
+            class="btn btn-primary"
+          >
+            Edit
+          </button>
           <button class="btn btn-primary btn-outline">Delete</button>
         </div>
       </div>
     </div>
   </div>
 </template>
+getAllDraftsgetAllDrafts

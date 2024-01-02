@@ -19,6 +19,7 @@ import TemplateOnline from "./TemplateOnline.vue";
 import { getAllTemplates, getTemplateImage } from "@/utils/api";
 
 interface Props {
+  initTemplate: boolean;
   setTemplate: (id: string) => void;
   setDrawingMode: (value: boolean) => void;
 }
@@ -42,6 +43,10 @@ onMounted(async () => {
       name: template.name,
     }));
   });
+
+  console.log(props);
+
+  if (!props.initTemplate) return;
 
   index.value = Math.floor(Math.random() * templates.value.length);
 
