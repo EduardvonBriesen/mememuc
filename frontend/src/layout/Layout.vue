@@ -46,6 +46,7 @@ function logout() {
           tabindex="0"
           class="menu menu-sm dropdown-content bg-neutral rounded-box z-[1] mt-3 w-32 p-2 shadow"
         >
+          <li><router-link to="/drafts">Drafts</router-link></li>
           <li><button @click="logout">Logout</button></li>
         </ul>
       </div>
