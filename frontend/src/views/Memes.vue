@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onMounted, ref, watchEffect } from "vue";
 import { getMeme, getAllMemes } from "@/utils/api";
 import CommentSection from "@/components/CommentSection.vue";
 import {
   ChevronRightIcon as NextIcon,
   ChevronLeftIcon as PreviousIcon,
   ArrowPathIcon as RandomIcon,
+  PlayIcon as PlayIcon,
+  PauseIcon as PauseIcon,
 } from "@heroicons/vue/24/solid";
 
-const router = useRouter();
+import router from "@/router";
 
 const meme = ref<{
   id: string;
@@ -21,15 +22,37 @@ const meme = ref<{
 } | null>(null);
 
 const allMemes = ref<Array<{ id: string }>>([]);
-const route = useRoute();
-const memeId = route.params.memeId as string;
+
+const autoplay = ref(false);
+
+let autoplayInterval: NodeJS.Timeout;
 
 onMounted(async () => {
+  let memeId = router.currentRoute.value.params.memeId as string;
   meme.value = await getMeme(memeId);
   allMemes.value = await getAllMemes();
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
+  const storedAutoplay = localStorage.getItem("autoplay");
+  autoplay.value = storedAutoplay ? JSON.parse(storedAutoplay) : false;
+  console.log("Autoplay:", autoplay.value);
 });
+
+// Periodically call goToNextMeme if autoplay is enabled
+watchEffect(() => {
+  if (autoplay.value) {
+    autoplayInterval = setInterval(() => {
+      goToNextMeme();
+    }, 3000);
+  } else {
+    clearInterval(autoplayInterval);
+  }
+});
+
+function saveAutoplayState() {
+  // Save autoplay state to localStorage
+  localStorage.setItem("autoplay", JSON.stringify(autoplay.value));
+}
 
 function downloadMeme() {
   // Create a link element and trigger a click to download the image
@@ -53,6 +76,7 @@ async function shareMeme() {
 }
 
 async function goToPreviousMeme() {
+  let memeId = router.currentRoute.value.params.memeId as string;
   console.log(memeId);
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
@@ -60,17 +84,18 @@ async function goToPreviousMeme() {
   if (currentIndex > 0) {
     const previousMemeId = allMemes.value[currentIndex - 1].id;
     console.log(previousMemeId);
-    router.push(`/meme/${previousMemeId}`); // Warum funktioniert das nicht?
-    window.location.href = `/meme/${previousMemeId}`;
+    meme.value = await getMeme(previousMemeId);
+    router.push(`/meme/${previousMemeId}`);
   } else {
     const previousMemeId = allMemes.value[allMemes.value.length - 1].id;
-    router.push(`/meme/${previousMemeId}`); // Warum funktioniert das nicht?
-    window.location.href = `/meme/${previousMemeId}`;
+    meme.value = await getMeme(previousMemeId);
+    router.push(`/meme/${previousMemeId}`);
     console.log("Starting from the back.");
   }
 }
 
 async function goToNextMeme() {
+  let memeId = router.currentRoute.value.params.memeId as string;
   console.log(memeId);
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
@@ -78,17 +103,18 @@ async function goToNextMeme() {
   if (currentIndex < allMemes.value.length - 1) {
     const nextMemeId = allMemes.value[currentIndex + 1].id;
     console.log(nextMemeId);
-    router.push(`/meme/${nextMemeId}`); // Warum funktioniert das nicht?
-    window.location.href = `/meme/${nextMemeId}`;
+    meme.value = await getMeme(nextMemeId);
+    router.push(`/meme/${nextMemeId}`);
   } else {
     const nextMemeId = allMemes.value[0].id;
-    router.push(`/meme/${nextMemeId}`); // Warum funktioniert das nicht?
-    window.location.href = `/meme/${nextMemeId}`;
+    meme.value = await getMeme(nextMemeId);
+    router.push(`/meme/${nextMemeId}`);
     console.log("Starting from the front.");
   }
 }
 
 async function goToRandomMeme() {
+  let memeId = router.currentRoute.value.params.memeId as string;
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   const allIndicesExceptCurrent = allMemes.value
     .map((_, index) => index)
@@ -100,11 +126,25 @@ async function goToRandomMeme() {
         Math.floor(Math.random() * allIndicesExceptCurrent.length)
       ];
     const randomMemeId = allMemes.value[randomIndex].id;
-    router.push(`/meme/${randomMemeId}`); // Warum funktioniert das nicht?
-    window.location.href = `/meme/${randomMemeId}`;
+    meme.value = await getMeme(randomMemeId);
+    router.push(`/meme/${randomMemeId}`);
   } else {
     console.log("No other memes available for random selection.");
   }
+}
+
+function startAutoplay() {
+  autoplay.value = true;
+  saveAutoplayState();
+  console.log("Autoplay:", autoplay.value);
+}
+
+function stopAutoplay() {
+  autoplay.value = false;
+  saveAutoplayState();
+  console.log("Autoplay:", autoplay.value);
+
+  clearInterval(autoplayInterval);
 }
 </script>
 
@@ -116,6 +156,20 @@ async function goToRandomMeme() {
       </button>
       <button class="btn btn-primary btn-outline" @click="goToRandomMeme()">
         <RandomIcon class="h-6 w-6" />
+      </button>
+      <button
+        class="btn btn-primary btn-outline playicon"
+        :class="{ hide: autoplay }"
+        @click="startAutoplay()"
+      >
+        <PlayIcon class="h-6 w-6" />
+      </button>
+      <button
+        class="btn btn-primary btn-outline pauseicon"
+        :class="{ hide: !autoplay }"
+        @click="stopAutoplay()"
+      >
+        <PauseIcon class="h-6 w-6" />
       </button>
       <button class="btn btn-primary btn-outline" @click="goToNextMeme()">
         <NextIcon class="h-6 w-6" />
@@ -139,3 +193,9 @@ async function goToRandomMeme() {
     </div>
   </div>
 </template>
+
+<style>
+.hide {
+  display: none;
+}
+</style>
