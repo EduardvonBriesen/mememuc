@@ -3,3 +3,5 @@ npm-debug.log
 .idea
 package-lock.json
 dist
+frontend/env
+server/env
