@@ -1,1 +1,12 @@
-{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"801248fbb0be42e29ad4af9bed9419dd","collectionName":"Meme","type":"collection"}
+{
+  "indexes": [
+    {
+      "v": { "$numberInt": "2" },
+      "key": { "_id": { "$numberInt": "1" } },
+      "name": "_id_"
+    }
+  ],
+  "uuid": "a8420f86de3c4dbb9e7d411b8e68ce37",
+  "collectionName": "Meme",
+  "type": "collection"
+}

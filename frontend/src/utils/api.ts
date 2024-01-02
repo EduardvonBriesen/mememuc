@@ -70,3 +70,7 @@ export function setUserVote(
 export function getUserVotes(username: string) {
   return client.user.getVotes.query({ username });
 }
+
+export function getUserName(ID: string) {
+  return client.user.getUserByID.query({ ID });
+}

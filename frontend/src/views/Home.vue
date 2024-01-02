@@ -11,6 +11,7 @@ import {
   setUserVote,
   getMeme,
   getTemplateImage,
+  getUserName,
 } from "@/utils/api";
 
 const username = "test-user"; // TODO: get username from login
@@ -49,28 +50,71 @@ function updateVote(memeId: string, upvote: boolean) {
   }
 }
 
-//Idee: Eventuell Bildinhalt extrahieren und extern erkennen lassen?
-function extractMemeImage(memeId: string) {
-  const memeData = getMeme(memeId);
-  const imageData = memeData.base64;
-  return imageData;
+function timestampToDate(timestamp) {
+  const dateobject = new Date(timestamp);
+  const onlydate = dateobject.toISOString().split("T")[0];
+  return onlydate;
 }
-function getTemplateName(memeId: string) {
-  const memeData = getTemplateImage(memeId);
-  console.log("Hole Infos...");
-  console.log(memeData);
-  console.log("Infos sollten da sein");
+
+//ToDo: UserID mit UserName ersetzen
+/* function UserIdToUserName(userId){
+   return  getUserName(userId).then((data) => {
+    var  UserName = usdataer.username;
+  console.log("UserName: " +UserName
+   });
+  );
+  if (UserName === undefined){
+    UserName = "Unknown User";
+  }
+  return UserName;
+} */
+
+function generateText(memeId: string): Promise<string> {
+  console.log("loading...");
+  return getMeme(memeId).then((data) => {
+    var memeData = data;
+    console.log("Meme " + memeData);
+    var image = memeData.base64; //ToDo: Meme Bildanalyse starten
+    console.log("image " + image);
+    var timestamp = timestampToDate(memeData.timestamp);
+    console.log("Time " + timestamp);
+    var userName = memeData.userId; //ToDo: UserID mit UserName ersetzen
+    console.log("userId " + userName);
+    var upvote = memeData.upvotes;
+    console.log("upvote " + upvote);
+    var downvote = memeData.downvotes;
+    console.log("downvote " + downvote);
+    console.log("pre-description " + description); //ToDo: Description aus DB ziehen - Es fehlt noch MongoPreData
+    if (memeData.description === undefined) {
+      var description = "There is no description for this meme.";
+    } else {
+      var description = "The description is: " + memeData.description;
+    }
+    console.log("description " + description);
+    var text =
+      "This meme was uploaded on " +
+      timestamp +
+      " from user " +
+      userName +
+      ". It has " +
+      upvote +
+      " Upvotes and " +
+      downvote +
+      " Downvotes. " +
+      description;
+    console.log("text " + text);
+    return text;
+  });
 }
 
 function generateSpeech(memeId: string) {
-  getTemplateName("65587eab5914276764c48823");
-  var textToSpeak =
-    "Das Meme heißt 'Is this a thing? und in diesem Meme steht kein Text. Das Upvote/Downvote Verhältnis ist '0'. Du hast noch nicht abgestimmt.";
-
-  var synth = window.speechSynthesis;
-  var utterance = new SpeechSynthesisUtterance(textToSpeak);
-  synth.speak(utterance);
-  window.alert("Button geht!");
+  generateText(memeId).then((textToSpeak) => {
+    var synth = window.speechSynthesis;
+    console.log("Text2Speak: " + textToSpeak);
+    var utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = "en-US";
+    synth.speak(utterance);
+  });
 }
 </script>
 
@@ -96,13 +140,15 @@ function generateSpeech(memeId: string) {
         :key="meme.id"
       >
         <!-- Speech Icon trigger-->
-        <button
-          class="btn btn-circle btn-primary btn-outline"
-          @click="() => generateSpeech()"
-        >
-          <SpeechIcon class="h-6 w-6" />
-        </button>
-
+        <div class="m-3 flex justify-end">
+          <button
+            class="btn btn-outline btn-info w-25 rounded-full"
+            @click="() => generateSpeech(meme.id)"
+          >
+            Describe it
+            <SpeechIcon class="h-4 w-4" />
+          </button>
+        </div>
         <figure>
           <img :src="meme.base64" />
         </figure>
