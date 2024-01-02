@@ -10,7 +10,7 @@ import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
-import { createMeme } from "@/utils/api";
+import { createMeme, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
 const can = ref(null);
 
@@ -22,7 +22,18 @@ const drawingMode = ref(false);
 const router = useRouter();
 
 onMounted(async () => {
+  const draftId = router.currentRoute.value.params.draftId as string;
+
   canvas = new fabric.Canvas(can.value);
+
+  if (draftId) {
+    const draft = await getDraft(draftId);
+    canvas.loadFromJSON(draft.serializedCanvas, () => {
+      canvas.renderAll();
+      canvas.setWidth(draft.width);
+      canvas.setHeight(draft.height);
+    });
+  }
 
   canvas.on("selection:created", (e: any) => {
     activeObject.value = e.selected[0];
@@ -155,6 +166,26 @@ function generateMemeWithPrompt() {
 function openMemeSingleView(memeId: string) {
   router.push(`/meme/${memeId}`);
 }
+
+function saveDraftHandler() {
+  const draftId = router.currentRoute.value.params.draftId as string;
+
+  if (draftId) {
+    const serializedCanvas = JSON.stringify(canvas);
+    updateDraft(
+      draftId,
+      serializedCanvas,
+      canvas.getWidth(),
+      canvas.getHeight(),
+    );
+    return;
+  }
+
+  const serializedCanvas = JSON.stringify(canvas);
+  const name = window.prompt("Enter a name for your draft:", "My Draft");
+  if (!name) return;
+  saveDraft(name, serializedCanvas, canvas.getWidth(), canvas.getHeight());
+}
 </script>
 
 <template>
@@ -176,6 +207,7 @@ function openMemeSingleView(memeId: string) {
 
     <div class="flex w-fit flex-col justify-center gap-4">
       <TemplateControl
+        :init-template="!router.currentRoute.value.params.draftId"
         :setTemplate="setTemplate"
         :setDrawingMode="setDrawingMode"
       />
@@ -188,6 +220,9 @@ function openMemeSingleView(memeId: string) {
       <div class="flex justify-center gap-4">
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
           Generate Meme
+        </button>
+        <button class="btn btn-primary w-48" @click="saveDraftHandler">
+          Save Draft
         </button>
       </div>
     </div>
