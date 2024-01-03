@@ -106,25 +106,23 @@ async function setTemplate(src: string) {
     const fabricImg = new fabric.Image(img, {
       scaleX: scale,
       scaleY: scale,
-      selectable: true,
-      hasControls: true,
     });
-
-    canvas.setWidth(width * scale);
-    canvas.setHeight(height * scale);
-
-    canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
-    canvas.setWidth(width * scale);
-    canvas.setHeight(height * scale);
-
-    canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
-
-    canvas.add(fabricImg);
-    canvas.setActiveObject(fabricImg);
 
     // Apply lock state to the new image object
     fabricImg.selectable = !resizeLocked.value;
     fabricImg.evented = !resizeLocked.value;
+
+    canvas.add(fabricImg);
+
+    if (resizeLocked.value) {
+      canvas.setWidth(width * scale);
+      canvas.setHeight(height * scale);
+      canvas.add(fabricImg);
+      canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
+      return;
+    }
+
+    canvas.setActiveObject(fabricImg);
   };
 
   img.onerror = function (error) {
@@ -261,6 +259,7 @@ function toggleResizeLock() {
 
   // Update the selectable and evented properties for all canvas objects
   canvas.forEachObject((obj) => {
+    if (!(obj instanceof fabric.Image)) return;
     obj.selectable = !resizeLocked.value;
     obj.evented = !resizeLocked.value;
   });
