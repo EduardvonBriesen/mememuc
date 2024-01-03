@@ -14,7 +14,14 @@ import { createMeme, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
 const can = ref(null);
 
+const resizeLocked = ref(true); // Initially locked
+
 let canvas: fabric.Canvas;
+
+//resize varibales
+let resizing = false;
+let lastPosX = 0;
+let lastPosY = 0;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
@@ -46,15 +53,34 @@ onMounted(async () => {
   canvas.on("selection:cleared", () => {
     activeObject.value = null;
   });
+
+  // Apply initial lock state to existing canvas objects
+  applyLockStateToObjects();
 });
+
+function clearCanvas() {
+  canvas.clear();
+  // other necessary cleanup or reinitialization
+}
+
+function applyLockStateToObjects() {
+  canvas.forEachObject((obj) => {
+    obj.selectable = !resizeLocked.value;
+    obj.evented = !resizeLocked.value;
+  });
+}
 
 function addText() {
   const text = new fabric.IText("hello world", {
-    left: (activeObject.value?.left ?? 0) + 10,
-    top: (activeObject.value?.top ?? 0) + 10,
+    left: ((activeObject.value as fabric.IText)?.left ?? 0) + 10,
+    top: ((activeObject.value as fabric.IText)?.top ?? 0) + 10,
   });
   canvas.add(text);
   canvas.setActiveObject(text);
+
+  // Possiblility to lock text with the resize lock
+  // text.selectable = !resizeLocked.value;
+  // text.evented = !resizeLocked.value;
 }
 
 async function setTemplate(src: string) {
@@ -75,22 +101,28 @@ async function setTemplate(src: string) {
   img.onload = function () {
     const width = img.width ?? 500;
     const height = img.height ?? 500;
-
-    const scale = 500 / width;
+    const scale = 500 / Math.max(width, height);
 
     const fabricImg = new fabric.Image(img, {
       scaleX: scale,
       scaleY: scale,
     });
 
-    canvas.setWidth(width * scale);
-    canvas.setHeight(height * scale);
+    // Apply lock state to the new image object
+    fabricImg.selectable = !resizeLocked.value;
+    fabricImg.evented = !resizeLocked.value;
 
-    canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
-    canvas.setWidth(width * scale);
-    canvas.setHeight(height * scale);
+    canvas.add(fabricImg);
 
-    canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
+    if (resizeLocked.value) {
+      canvas.setWidth(width * scale);
+      canvas.setHeight(height * scale);
+      canvas.add(fabricImg);
+      canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
+      return;
+    }
+
+    canvas.setActiveObject(fabricImg);
   };
 
   img.onerror = function (error) {
@@ -186,6 +218,54 @@ function saveDraftHandler() {
   if (!name) return;
   saveDraft(name, serializedCanvas, canvas.getWidth(), canvas.getHeight());
 }
+
+function startResizing(e: MouseEvent) {
+  if (resizeLocked.value) return; // Prevent resizing if locked
+
+  resizing = true;
+  lastPosX = e.clientX;
+  lastPosY = e.clientY;
+  document.addEventListener("mousemove", resizeCanvas);
+  document.addEventListener("mouseup", stopResizing);
+}
+
+function resizeCanvas(e: MouseEvent) {
+  if (!resizing || resizeLocked.value) return; // Check lock state
+  const dx = e.clientX - lastPosX;
+  const dy = e.clientY - lastPosY;
+  if (
+    (canvas.width as number) + dx > 100 &&
+    (canvas.height as number) + dy > 100
+  ) {
+    // Minimum size check
+    canvas.setWidth((canvas.width as number) + dx);
+    canvas.setHeight((canvas.height as number) + dy);
+    canvas.renderAll();
+  }
+  lastPosX = e.clientX;
+  lastPosY = e.clientY;
+}
+
+function stopResizing() {
+  if (resizeLocked.value) return; // Check lock state
+
+  resizing = false;
+  document.removeEventListener("mousemove", resizeCanvas);
+  document.removeEventListener("mouseup", stopResizing);
+}
+
+function toggleResizeLock() {
+  resizeLocked.value = !resizeLocked.value;
+
+  // Update the selectable and evented properties for all canvas objects
+  canvas.forEachObject((obj) => {
+    if (!(obj instanceof fabric.Image)) return;
+    obj.selectable = !resizeLocked.value;
+    obj.evented = !resizeLocked.value;
+  });
+
+  canvas.renderAll(); // Re-render the canvas to apply changes
+}
 </script>
 
 <template>
@@ -210,10 +290,24 @@ function saveDraftHandler() {
         :init-template="!router.currentRoute.value.params.draftId"
         :setTemplate="setTemplate"
         :setDrawingMode="setDrawingMode"
+        @clearCanvas="clearCanvas"
       />
       <div class="card bg-neutral h-fit w-fit">
         <div class="card-body">
           <canvas ref="can" width="500" height="500"></canvas>
+          <div
+            class="resize-handle"
+            @mousedown="startResizing"
+            style="
+              cursor: nwse-resize;
+              position: absolute;
+              bottom: 0;
+              right: 0;
+              width: 20px;
+              height: 20px;
+              background: gray;
+            "
+          ></div>
         </div>
       </div>
       <!-- <TemplateGeneration  :canvas="canvas"  /> -->
@@ -221,6 +315,10 @@ function saveDraftHandler() {
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
           Generate Meme
         </button>
+        <button class="btn btn-secondary w-48" @click="toggleResizeLock">
+          {{ resizeLocked.valueOf() ? "Unlock Canvas" : "Lock Canvas" }}
+        </button>
+
         <button class="btn btn-primary w-48" @click="saveDraftHandler">
           Save Draft
         </button>
