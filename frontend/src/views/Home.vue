@@ -3,8 +3,16 @@ import { onMounted, ref } from "vue";
 import {
   HandThumbUpIcon as UpIcon,
   HandThumbDownIcon as DownIcon,
+  MegaphoneIcon as SpeechIcon,
 } from "@heroicons/vue/24/solid";
-import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
+import {
+  getAllMemes,
+  getUserVotes,
+  setUserVote,
+  getMeme,
+  getTemplateImage,
+  getUserName,
+} from "@/utils/api";
 import { store } from "@/utils/store";
 import PlayfulText from "@/components/PlayfulText.vue";
 
@@ -41,6 +49,59 @@ function updateVote(memeId: string, upvote: boolean) {
     setUserVote(memeId, upvote);
   }
 }
+function timestampToDate(timestamp) {
+  const dateobject = new Date(timestamp);
+  const onlydate = dateobject.toISOString().split("T")[0];
+  return onlydate;
+}
+
+function generateText(memeId: string): Promise<string> {
+  console.log("loading...");
+  return getMeme(memeId).then((data) => {
+    var memeData = data;
+    console.log("Meme " + memeData);
+    var image = memeData.base64; //ToDo: Meme Bildanalyse starten
+    console.log("image " + image);
+    var timestamp = timestampToDate(memeData.timestamp);
+    console.log("Time " + timestamp);
+    var userName = memeData.userId; //ToDo: UserID mit UserName ersetzen
+    console.log("userId " + userName);
+    var upvote = memeData.upvotes;
+    console.log("upvote " + upvote);
+    var downvote = memeData.downvotes;
+    console.log("downvote " + downvote);
+    console.log("pre-description " + description); //ToDo: Description aus DB ziehen - Es fehlt noch MongoPreData
+    if (memeData.description === undefined) {
+      var description = "There is no description for this meme.";
+    } else {
+      var description = "The description is: " + memeData.description;
+    }
+    console.log("description " + description);
+    var text =
+      "This meme was uploaded on " +
+      timestamp +
+      " from user " +
+      userName +
+      ". It has " +
+      upvote +
+      " Upvotes and " +
+      downvote +
+      " Downvotes. " +
+      description;
+    console.log("text " + text);
+    return text;
+  });
+}
+
+function generateSpeech(memeId: string) {
+  generateText(memeId).then((textToSpeak) => {
+    var synth = window.speechSynthesis;
+    console.log("Text2Speak: " + textToSpeak);
+    var utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = "en-US";
+    synth.speak(utterance);
+  });
+}
 </script>
 
 <template>
@@ -52,6 +113,17 @@ function updateVote(memeId: string, upvote: boolean) {
         v-for="meme in memes"
         :key="meme.id"
       >
+        <!-- Speech Icon trigger-->
+        <div class="m-3 flex justify-end">
+          <button
+            class="btn btn-outline btn-info w-25 rounded-full"
+            @click="() => generateSpeech(meme.id)"
+          >
+            Describe it
+            <SpeechIcon class="h-4 w-4" />
+          </button>
+        </div>
+
         <figure
           @click="$router.push(`/meme/${meme.id}`)"
           class="cursor-pointer"

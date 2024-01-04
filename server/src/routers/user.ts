@@ -26,6 +26,24 @@ export const userRouter = router({
 
       return templates;
     }),
+  getUserByID: privatProcedure
+    .input(
+      z.object({
+        ID: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.prisma.user
+        .findFirst({
+          where: { id: input.ID },
+        })
+        .then((user) => user);
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+      return user;
+    }),
   uploadTemplate: privatProcedure
     .input(
       z.object({
