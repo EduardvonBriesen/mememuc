@@ -19,6 +19,7 @@ let canvas: fabric.Canvas;
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
 const targetFileSizeKB = ref(1000); // Default value
+const memeTitle = ref(""); // Default value
 
 const router = useRouter();
 
@@ -95,7 +96,7 @@ function setDrawingMode(value: boolean) {
   canvas.isDrawingMode = value;
 }
 
-function generateMeme(targetFileSizeKB: number) {
+function generateMeme(targetFileSizeKB: number, memeTitle: string) {
   // Check if there is a background image and it is not tainted
   if (
     canvas.backgroundImage &&
@@ -127,7 +128,7 @@ function generateMeme(targetFileSizeKB: number) {
     }
 
     //save image to mongoDB database
-    createMeme(dataUrl).then((res) => {
+    createMeme(dataUrl, memeTitle).then((res) => {
       console.log(res);
       openMemeSingleView(res.id);
     });
@@ -148,7 +149,7 @@ function generateMemeWithPrompt() {
   // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
 
   // Call the generateMeme function with the target file size
-  generateMeme(targetFileSizeKB.value);
+  generateMeme(targetFileSizeKB.value, memeTitle.value);
   console.log("Target File Size:", targetFileSizeKB.value);
 }
 
@@ -200,6 +201,19 @@ function openMemeSingleView(memeId: string) {
         />
         <span class="text-lg">{{ targetFileSizeKB }} KB</span>
       </div>
+      <div class="flex justify-center gap-4">
+        <label for="memeTitle" class="center-vertically text-lg font-bold">
+          Meme Title:
+        </label>
+        <input
+          id="memeTitle"
+          required
+          type="text"
+          class="input input-bordered"
+          placeholder="Enter your meme title"
+          v-model="memeTitle"
+        />
+      </div>
 
       <div class="flex justify-center gap-4">
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
@@ -221,5 +235,10 @@ function openMemeSingleView(memeId: string) {
 <style>
 .hidden {
   display: none;
+}
+
+.center-vertically {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 </style>

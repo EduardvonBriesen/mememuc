@@ -52,8 +52,8 @@ export function getAllMemes() {
   return client.meme.all.query();
 }
 
-export function createMeme(base64: string) {
-  return client.meme.save.mutate({ base64 });
+export function createMeme(base64: string, title: string) {
+  return client.meme.save.mutate({ base64, title });
 }
 
 export function setUserVote(memeId: string, upvote?: boolean) {
