@@ -1,27 +1,8 @@
 import { z } from "zod";
 import { ObjectId } from "bson";
-import { privatProcedure, publicProcedure, router } from "../trpc";
+import { privatProcedure, router } from "../trpc";
 
 export const userRouter = router({
-  all: publicProcedure.query(({ ctx }) => {
-    const users = ctx.prisma.user.findMany().then((users) => users);
-    return users;
-  }),
-  getUserByName: publicProcedure
-    .input(z.object({ username: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const user = await ctx.prisma.user
-        .findFirst({
-          where: { username: input.username },
-        })
-        .then((user) => user);
-
-      if (!user) {
-        throw new Error("User not found");
-      }
-
-      return user;
-    }),
   getUserTemplates: privatProcedure
     .input(
       z.object({
@@ -126,11 +107,9 @@ export const userRouter = router({
       return;
     }),
   getVotes: privatProcedure.query(async ({ ctx }) => {
-    const user = await ctx.prisma.user
-      .findFirst({
-        where: { id: ctx.userId },
-      })
-      .then((user) => user);
+    const user = await ctx.prisma.user.findFirst({
+      where: { id: ctx.userId },
+    });
 
     if (!user) {
       throw new Error("User not found");
@@ -138,4 +117,105 @@ export const userRouter = router({
 
     return user.votes;
   }),
+  saveDraft: privatProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        serializedCanvas: z.string(),
+        width: z.number(),
+        height: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.draft.create({
+        data: {
+          name: input.name,
+          serializedCanvas: input.serializedCanvas,
+          width: input.width,
+          height: input.height,
+          user: {
+            connect: {
+              id: ctx.userId,
+            },
+          },
+        },
+      });
+
+      return;
+    }),
+  updateDraft: privatProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        serializedCanvas: z.string(),
+        width: z.number(),
+        height: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.draft.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          serializedCanvas: input.serializedCanvas,
+          width: input.width,
+          height: input.height,
+        },
+      });
+
+      return;
+    }),
+  getAllDrafts: privatProcedure.query(async ({ ctx }) => {
+    const drafts = await ctx.prisma.draft.findMany({
+      where: {
+        userId: ctx.userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        timestamp: true,
+      },
+    });
+
+    return drafts;
+  }),
+  getDraft: privatProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const draft = await ctx.prisma.draft
+        .findFirst({
+          where: {
+            id: input.id,
+            userId: ctx.userId,
+          },
+        })
+        .then((draft) => draft);
+
+      if (!draft) {
+        throw new Error("Draft not found");
+      }
+
+      return draft;
+    }),
+  deleteDraft: privatProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.draft.delete({
+        where: {
+          id: input.id,
+          userId: ctx.userId,
+        },
+      });
+
+      return;
+    }),
 });

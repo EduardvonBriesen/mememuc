@@ -19,6 +19,7 @@ import TemplateOnline from "./TemplateOnline.vue";
 import { getAllTemplates, getTemplateImage } from "@/utils/api";
 
 interface Props {
+  initTemplate: boolean;
   setTemplate: (id: string) => void;
   setDrawingMode: (value: boolean) => void;
 }
@@ -28,6 +29,7 @@ const onlineModalOpen = ref(false);
 const uploadModalOpen = ref(false);
 const cameraModalOpen = ref(false);
 const pasteModalOpen = ref(false);
+const emit = defineEmits(["clearCanvas"]);
 
 const templates = ref<{ id: string; name: string }[]>([]);
 const index = ref(0);
@@ -43,6 +45,10 @@ onMounted(async () => {
     }));
   });
 
+  console.log(props);
+
+  if (!props.initTemplate) return;
+
   index.value = Math.floor(Math.random() * templates.value.length);
 
   const src = await getTemplateImage(templates.value[index.value].id);
@@ -50,15 +56,21 @@ onMounted(async () => {
   props.setTemplate(src);
 });
 
-async function goToPrevious() {
+function goToPrevious() {
+  emit("clearCanvas");
   index.value--;
   if (index.value < 0) {
     index.value = templates.value.length - 1;
   }
-  props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+  async function setTemplateImage() {
+    props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+  }
+
+  setTemplateImage();
 }
 
 async function goToNext() {
+  emit("clearCanvas");
   index.value++;
   if (index.value >= templates.value.length) {
     index.value = 0;
@@ -67,6 +79,7 @@ async function goToNext() {
 }
 
 async function goToRandom() {
+  emit("clearCanvas");
   index.value = Math.floor(Math.random() * templates.value.length);
   props.setTemplate(await getTemplateImage(templates.value[index.value].id));
 }
