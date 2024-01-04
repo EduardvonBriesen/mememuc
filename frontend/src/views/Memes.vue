@@ -77,13 +77,11 @@ async function shareMeme() {
 
 async function goToPreviousMeme() {
   let memeId = router.currentRoute.value.params.memeId as string;
-  console.log(memeId);
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
   console.log(allMemes.value.length - 1);
   if (currentIndex > 0) {
     const previousMemeId = allMemes.value[currentIndex - 1].id;
-    console.log(previousMemeId);
     meme.value = await getMeme(previousMemeId);
     router.push(`/meme/${previousMemeId}`);
   } else {
@@ -96,13 +94,11 @@ async function goToPreviousMeme() {
 
 async function goToNextMeme() {
   let memeId = router.currentRoute.value.params.memeId as string;
-  console.log(memeId);
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
   console.log(allMemes.value.length - 1);
   if (currentIndex < allMemes.value.length - 1) {
     const nextMemeId = allMemes.value[currentIndex + 1].id;
-    console.log(nextMemeId);
     meme.value = await getMeme(nextMemeId);
     router.push(`/meme/${nextMemeId}`);
   } else {

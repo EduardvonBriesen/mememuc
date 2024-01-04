@@ -18,6 +18,7 @@ let canvas: fabric.Canvas;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
+const targetFileSizeKB = ref(1000); // Default value
 
 const router = useRouter();
 
@@ -115,14 +116,13 @@ function generateMeme(targetFileSizeKB: number) {
     } while (quality > 0 && dataUrl.length / 1024 > targetFileSizeKB);
 
     if (dataUrl.length / 1024 > targetFileSizeKB) {
-      const userInput = window.prompt(
-        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB):",
-        "1000",
+      window.alert(
+        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB)",
       );
-      const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+      // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000;
 
       // Call the generateMeme function with the target file size
-      generateMeme(targetFileSizeKB);
+      // generateMeme(targetFileSizeKB);
       return;
     }
 
@@ -132,7 +132,6 @@ function generateMeme(targetFileSizeKB: number) {
       openMemeSingleView(res.id);
     });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
-    console.log("Meme generated with quality:", quality);
   } else {
     console.error(
       "Background image is tainted. Ensure that it is hosted on the same domain or has proper CORS headers.",
@@ -141,15 +140,16 @@ function generateMeme(targetFileSizeKB: number) {
 }
 
 function generateMemeWithPrompt() {
-  const userInput = window.prompt(
-    "Enter the desired maximum file size in kilobytes (KB):",
-    "1000",
-  );
+  // const userInput = window.prompt(
+  //   "Enter the desired maximum file size in kilobytes (KB):",
+  //   "1000",
+  // );
 
-  const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+  // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
 
   // Call the generateMeme function with the target file size
-  generateMeme(targetFileSizeKB);
+  generateMeme(targetFileSizeKB.value);
+  console.log("Target File Size:", targetFileSizeKB.value);
 }
 
 function openMemeSingleView(memeId: string) {
@@ -179,12 +179,28 @@ function openMemeSingleView(memeId: string) {
         :setTemplate="setTemplate"
         :setDrawingMode="setDrawingMode"
       />
+
       <div class="card bg-neutral h-fit w-fit">
         <div class="card-body">
           <canvas ref="can" width="500" height="500"></canvas>
         </div>
       </div>
       <!-- <TemplateGeneration  :canvas="canvas"  /> -->
+      <div class="filesize-prompt flex justify-center gap-4">
+        <label for="fileSize" class="text-lg font-bold">
+          Max File Size (KB):
+        </label>
+        <input
+          id="fileSize"
+          type="range"
+          min="50"
+          max="2500"
+          step="50"
+          v-model="targetFileSizeKB"
+        />
+        <span class="text-lg">{{ targetFileSizeKB }} KB</span>
+      </div>
+
       <div class="flex justify-center gap-4">
         <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
           Generate Meme
@@ -201,3 +217,9 @@ function openMemeSingleView(memeId: string) {
     </div>
   </div>
 </template>
+
+<style>
+.hidden {
+  display: none;
+}
+</style>
