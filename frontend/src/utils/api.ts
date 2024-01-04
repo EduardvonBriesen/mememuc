@@ -64,8 +64,8 @@ export function getUserVotes() {
   return client.user.getVotes.query();
 }
 
-export function getUserByID(id: string) {
-  return client.user.getUserByID.query(id);
+export function getUserName(ID: string) {
+  return client.user.getUserByID.query({ ID });
 }
 
 export function getComments(memeId: string) {

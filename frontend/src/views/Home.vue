@@ -56,39 +56,28 @@ function timestampToDate(timestamp) {
 }
 
 function generateText(memeId: string): Promise<string> {
-  console.log("loading...");
   return getMeme(memeId).then((data) => {
-    var memeData = data;
-    console.log("Meme " + memeData);
-    var image = memeData.base64; //ToDo: Meme Bildanalyse starten
-    console.log("image " + image);
-    var timestamp = timestampToDate(memeData.timestamp);
-    console.log("Time " + timestamp);
-    var userName = memeData.userId; //ToDo: UserID mit UserName ersetzen
+    const memeData = data;
+    const userName = memeData.userId; //ToDo: UserID mit UserName ersetzen
     console.log("userId " + userName);
-    var upvote = memeData.upvotes;
-    console.log("upvote " + upvote);
-    var downvote = memeData.downvotes;
-    console.log("downvote " + downvote);
-    console.log("pre-description " + description); //ToDo: Description aus DB ziehen - Es fehlt noch MongoPreData
-    if (memeData.description === undefined) {
-      var description = "There is no description for this meme.";
-    } else {
-      var description = "The description is: " + memeData.description;
-    }
-    console.log("description " + description);
-    var text =
+    const image = memeData.base64; //ToDo: Meme Bildanalyse starten
+
+    const description =
+      memeData.Description === undefined
+        ? "There is no description for this meme."
+        : "The description is: " + memeData.Description;
+
+    const text =
       "This meme was uploaded on " +
-      timestamp +
+      timestampToDate(memeData.timestamp) +
       " from user " +
       userName +
       ". It has " +
-      upvote +
+      memeData.upvotes +
       " Upvotes and " +
-      downvote +
+      memeData.downvotes +
       " Downvotes. " +
       description;
-    console.log("text " + text);
     return text;
   });
 }
