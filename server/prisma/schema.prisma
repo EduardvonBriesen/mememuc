@@ -29,6 +29,7 @@ model Draft {
 model Meme {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   base64    String
+  title     String    @default("")
   timestamp DateTime  @default(now())
   userId    String    @db.ObjectId
   user      User      @relation(fields: [userId], references: [id])

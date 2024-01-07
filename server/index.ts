@@ -1,4 +1,7 @@
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
+import { generateOpenApiDocument } from "trpc-openapi";
+import http from "http";
+import { createOpenApiHttpHandler } from "trpc-openapi";
 
 import { router } from "./src/trpc";
 import cors from "cors";
@@ -27,3 +30,9 @@ const server = createHTTPServer({
 });
 
 server.listen(3000);
+
+const openapiServer = http.createServer(
+  createOpenApiHttpHandler({ router: appRouter, createContext }),
+);
+
+openapiServer.listen(3001);

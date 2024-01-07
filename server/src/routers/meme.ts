@@ -15,6 +15,55 @@ export const memeRouter = router({
     const memes = await ctx.prisma.meme.findMany();
     return memes;
   }),
+  search: publicProcedure
+    .meta({ openapi: { method: "GET", path: "/search" } })
+    .input(
+      z.object({
+        query: z.string().optional(),
+        sort: z.enum(["new", "top", "hot"]).optional(),
+        page: z.number().int().positive().optional(),
+        limit: z.number().int().positive().optional(),
+      }),
+    )
+    .output(z.any())
+    .query(async ({ ctx, input }) => {
+      const memes = await ctx.prisma.meme
+        .findMany({
+          orderBy: [
+            { timestamp: input.sort === "new" ? "desc" : undefined },
+            { upvotes: input.sort === "top" ? "desc" : undefined },
+            { downvotes: input.sort === "hot" ? "desc" : undefined },
+          ],
+          skip: input.page ? (input.page - 1) * (input.limit ?? 10) : undefined,
+          take: input.limit,
+          where: {
+            title: {
+              contains: input.query,
+            },
+          },
+          select: {
+            id: true,
+            title: true,
+            upvotes: true,
+            downvotes: true,
+            timestamp: true,
+            user: {
+              select: {
+                username: true,
+              },
+            },
+          },
+        })
+        .then((memes) =>
+          memes.map((meme) => ({
+            ...meme,
+            user: meme.user.username,
+            link: `http://localhost:5173/meme/${meme.id}`,
+          })),
+        );
+
+      return memes;
+    }),
   save: privatProcedure
     .input(
       z.object({

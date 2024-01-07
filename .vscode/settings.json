@@ -1,3 +1,4 @@
 {
-  "conventionalCommits.scopes": ["frontend", "backend", "database"]
+  "conventionalCommits.scopes": ["frontend", "backend", "database"],
+  "cSpell.words": ["openapi"]
 }
