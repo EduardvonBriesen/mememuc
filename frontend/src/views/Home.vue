@@ -24,7 +24,7 @@ const memes = ref<
 const userVotes = ref<{ [key: string]: boolean | undefined }>({});
 
 onMounted(async () => {
-  getMemes({}).then((data) => {
+  getMemes({ image: true }).then((data) => {
     memes.value = data;
   });
   getUserVotes().then((data) => {

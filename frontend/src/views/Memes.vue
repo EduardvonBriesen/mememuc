@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watchEffect } from "vue";
-import { getMeme, getAllMemes } from "@/utils/api";
+import { getMeme, getMemes } from "@/utils/api";
 import CommentSection from "@/components/CommentSection.vue";
 import {
   ChevronRightIcon as NextIcon,
@@ -30,7 +30,7 @@ let autoplayInterval: NodeJS.Timeout;
 onMounted(async () => {
   let memeId = router.currentRoute.value.params.memeId as string;
   meme.value = await getMeme(memeId);
-  allMemes.value = await getAllMemes();
+  allMemes.value = await getMemes({});
   const currentIndex = allMemes.value.findIndex((m) => m.id === memeId);
   console.log(currentIndex);
   const storedAutoplay = localStorage.getItem("autoplay");

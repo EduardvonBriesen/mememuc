@@ -53,13 +53,15 @@ export function getMemes({
   page,
   limit,
   sort,
+  image = false,
 }: {
   query?: string;
   page?: number;
   limit?: number;
   sort?: "new" | "hot" | "top";
+  image?: boolean;
 }) {
-  return client.meme.find.query({ query, sort, page, limit, image: true });
+  return client.meme.find.query({ query, sort, page, limit, image });
 }
 
 export function createMeme(base64: string, title: string) {

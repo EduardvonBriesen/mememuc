@@ -27,6 +27,7 @@ const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
 const targetFileSizeKB = ref(1000); // Default value
 const memeTitle = ref(""); // Default value
+const saveModalOpen = ref(false);
 
 const router = useRouter();
 
@@ -312,43 +313,48 @@ function toggleResizeLock() {
           ></div>
         </div>
       </div>
-      <!-- <TemplateGeneration  :canvas="canvas"  /> -->
-      <div class="filesize-prompt flex justify-center gap-4">
-        <label for="fileSize" class="text-lg font-bold">
-          Max File Size (KB):
-        </label>
-        <input
-          id="fileSize"
-          type="range"
-          min="50"
-          max="2500"
-          step="50"
-          v-model="targetFileSizeKB"
-        />
-        <span class="text-lg">{{ targetFileSizeKB }} KB</span>
-      </div>
-      <div class="flex justify-center gap-4">
-        <label for="memeTitle" class="center-vertically text-lg font-bold">
-          Meme Title:
-        </label>
-        <input
-          id="memeTitle"
-          required
-          type="text"
-          class="input input-bordered"
-          placeholder="Enter your meme title"
-          v-model="memeTitle"
-        />
+
+      <div class="modal" :class="{ 'modal-open': saveModalOpen }" role="dialog">
+        <form
+          class="modal-box w-3/2 flex max-w-xl flex-col"
+          @submit.prevent="generateMemeWithPrompt"
+        >
+          <label for="memeTitle" class="label label-text">Meme Title</label>
+          <input
+            id="memeTitle"
+            required
+            type="text"
+            class="input input-bordered"
+            placeholder="Enter your meme title"
+            v-model="memeTitle"
+          />
+          <label for="fileSize" class="label label-text">
+            Max File Size: {{ targetFileSizeKB }} KB
+          </label>
+          <input
+            class="range range-primary"
+            id="fileSize"
+            type="range"
+            min="50"
+            max="2500"
+            step="50"
+            v-model="targetFileSizeKB"
+          />
+
+          <button class="btn btn-primary mt-4 w-32" type="submit">
+            Generate Meme
+          </button>
+        </form>
+        <div class="modal-backdrop" @click="saveModalOpen = false" />
       </div>
 
       <div class="flex justify-center gap-4">
-        <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
+        <button class="btn btn-primary w-48" @click="saveModalOpen = true">
           Generate Meme
         </button>
         <button class="btn btn-secondary w-48" @click="toggleResizeLock">
           {{ resizeLocked.valueOf() ? "Unlock Canvas" : "Lock Canvas" }}
         </button>
-
         <button class="btn btn-primary w-48" @click="saveDraftHandler">
           Save Draft
         </button>
