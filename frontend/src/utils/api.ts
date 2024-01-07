@@ -48,12 +48,28 @@ export function getMeme(id: string) {
   return client.meme.get.query(id);
 }
 
-export function getAllMemes() {
+export function getMemes({
+  query,
+  page,
+  limit,
+  sort,
+  image = false,
+}: {
+  query?: string;
+  page?: number;
+  limit?: number;
+  sort?: "new" | "hot" | "top";
+  image?: boolean;
+}) {
+  return client.meme.find.query({ query, sort, page, limit, image });
+}
+
+export function getAllMemeIds() {
   return client.meme.all.query();
 }
 
-export function createMeme(base64: string) {
-  return client.meme.save.mutate({ base64 });
+export function createMeme(base64: string, title: string) {
+  return client.meme.save.mutate({ base64, title });
 }
 
 export function setUserVote(memeId: string, upvote?: boolean) {

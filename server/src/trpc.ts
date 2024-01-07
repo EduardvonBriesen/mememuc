@@ -1,9 +1,11 @@
 import { TRPCError, initTRPC } from "@trpc/server";
 import { createContext } from "./context";
 import { verifyToken } from "./utils/jwt";
+import { OpenApiMeta } from "trpc-openapi";
 
 const t = initTRPC
   .context<Awaited<ReturnType<typeof createContext>>>()
+  .meta<OpenApiMeta>()
   .create();
 
 const isAuthed = t.middleware(async ({ ctx, next }) => {

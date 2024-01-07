@@ -5,23 +5,19 @@ import {
   HandThumbDownIcon as DownIcon,
   MegaphoneIcon as SpeechIcon,
 } from "@heroicons/vue/24/solid";
-import {
-  getAllMemes,
-  getUserVotes,
-  setUserVote,
-  getMeme,
-  getTemplateImage,
-  getUserName,
-} from "@/utils/api";
+import { getMemes, getUserVotes, setUserVote } from "@/utils/api";
 import { store } from "@/utils/store";
 import PlayfulText from "@/components/PlayfulText.vue";
 
 const memes = ref<
   {
     id: string;
-    timestamp: string;
+    user: string;
+    link: string;
+    description: string;
     base64: string;
-    userId: string;
+    title: string;
+    timestamp: string;
     upvotes: number;
     downvotes: number;
   }[]
@@ -30,7 +26,7 @@ const memes = ref<
 const userVotes = ref<{ [key: string]: boolean | undefined }>({});
 
 onMounted(async () => {
-  getAllMemes().then((data) => {
+  getMemes({ image: true }).then((data) => {
     memes.value = data;
   });
   getUserVotes().then((data) => {
@@ -49,47 +45,42 @@ function updateVote(memeId: string, upvote: boolean) {
     setUserVote(memeId, upvote);
   }
 }
-function timestampToDate(timestamp) {
-  const dateobject = new Date(timestamp);
-  const onlydate = dateobject.toISOString().split("T")[0];
-  return onlydate;
-}
 
-function generateText(memeId: string): Promise<string> {
-  return getMeme(memeId).then((data) => {
-    const memeData = data;
-    const userName = memeData.userId; //ToDo: UserID mit UserName ersetzen
-    console.log("userId " + userName);
-    const image = memeData.base64; //ToDo: Meme Bildanalyse starten
+function generateText(memeId: string): string {
+  const meme = memes.value?.find((meme) => meme.id === memeId);
 
-    const description =
-      memeData.Description === undefined
-        ? "There is no description for this meme."
-        : "The description is: " + memeData.Description;
+  if (!meme) {
+    return "This meme does not exist.";
+  }
 
-    const text =
-      "This meme was uploaded on " +
-      timestampToDate(memeData.timestamp) +
-      " from user " +
-      userName +
-      ". It has " +
-      memeData.upvotes +
-      " Upvotes and " +
-      memeData.downvotes +
-      " Downvotes. " +
-      description;
-    return text;
-  });
+  const description =
+    meme.description === undefined
+      ? "There is no description for this meme."
+      : "The description is: " + meme.description;
+
+  const text =
+    "This meme was uploaded on " +
+    new Date(meme.timestamp).toLocaleDateString() +
+    " from user " +
+    meme.user +
+    ". It has " +
+    meme.upvotes +
+    " Upvotes and " +
+    meme.downvotes +
+    " Downvotes. " +
+    description;
+
+  return text;
 }
 
 function generateSpeech(memeId: string) {
-  generateText(memeId).then((textToSpeak) => {
-    var synth = window.speechSynthesis;
-    console.log("Text2Speak: " + textToSpeak);
-    var utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = "en-US";
-    synth.speak(utterance);
-  });
+  const textToSpeak = generateText(memeId);
+
+  var synth = window.speechSynthesis;
+  console.log("Text2Speak: " + textToSpeak);
+  var utterance = new SpeechSynthesisUtterance(textToSpeak);
+  utterance.lang = "en-US";
+  synth.speak(utterance);
 }
 </script>
 
