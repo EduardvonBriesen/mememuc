@@ -12,6 +12,15 @@ export const memeRouter = router({
 
     return meme;
   }),
+  all: publicProcedure.query(async ({ ctx }) => {
+    const memes = await ctx.prisma.meme.findMany({
+      select: {
+        id: true,
+      },
+    });
+
+    return memes;
+  }),
   find: publicProcedure
     .meta({ openapi: { method: "GET", path: "/memes" } })
     .input(
@@ -67,6 +76,7 @@ export const memeRouter = router({
     .input(
       z.object({
         base64: z.string(),
+        title: z.string(), // Add title property here
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -78,6 +88,7 @@ export const memeRouter = router({
             },
           },
           base64: input.base64,
+          title: input.title, // Set title here
         },
       });
 

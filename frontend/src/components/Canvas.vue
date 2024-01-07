@@ -25,6 +25,9 @@ let lastPosY = 0;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
+const targetFileSizeKB = ref(1000); // Default value
+const memeTitle = ref(""); // Default value
+const saveModalOpen = ref(false);
 
 const router = useRouter();
 
@@ -137,7 +140,7 @@ function setDrawingMode(value: boolean) {
   canvas.isDrawingMode = value;
 }
 
-function generateMeme(targetFileSizeKB: number) {
+function generateMeme(targetFileSizeKB: number, memeTitle: string) {
   // Check if there is a background image and it is not tainted
   if (
     canvas.backgroundImage &&
@@ -158,24 +161,22 @@ function generateMeme(targetFileSizeKB: number) {
     } while (quality > 0 && dataUrl.length / 1024 > targetFileSizeKB);
 
     if (dataUrl.length / 1024 > targetFileSizeKB) {
-      const userInput = window.prompt(
-        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB):",
-        "1000",
+      window.alert(
+        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB)",
       );
-      const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+      // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000;
 
       // Call the generateMeme function with the target file size
-      generateMeme(targetFileSizeKB);
+      // generateMeme(targetFileSizeKB);
       return;
     }
 
     //save image to mongoDB database
-    createMeme(dataUrl).then((res) => {
+    createMeme(dataUrl, memeTitle).then((res) => {
       console.log(res);
       openMemeSingleView(res.id);
     });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
-    console.log("Meme generated with quality:", quality);
   } else {
     console.error(
       "Background image is tainted. Ensure that it is hosted on the same domain or has proper CORS headers.",
@@ -184,15 +185,16 @@ function generateMeme(targetFileSizeKB: number) {
 }
 
 function generateMemeWithPrompt() {
-  const userInput = window.prompt(
-    "Enter the desired maximum file size in kilobytes (KB):",
-    "1000",
-  );
+  // const userInput = window.prompt(
+  //   "Enter the desired maximum file size in kilobytes (KB):",
+  //   "1000",
+  // );
 
-  const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
+  // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
 
   // Call the generateMeme function with the target file size
-  generateMeme(targetFileSizeKB);
+  generateMeme(targetFileSizeKB.value, memeTitle.value);
+  console.log("Target File Size:", targetFileSizeKB.value);
 }
 
 function openMemeSingleView(memeId: string) {
@@ -292,6 +294,7 @@ function toggleResizeLock() {
         :setDrawingMode="setDrawingMode"
         @clearCanvas="clearCanvas"
       />
+
       <div class="card bg-neutral h-fit w-fit">
         <div class="card-body">
           <canvas ref="can" width="500" height="500"></canvas>
@@ -310,15 +313,48 @@ function toggleResizeLock() {
           ></div>
         </div>
       </div>
-      <!-- <TemplateGeneration  :canvas="canvas"  /> -->
+
+      <div class="modal" :class="{ 'modal-open': saveModalOpen }" role="dialog">
+        <form
+          class="modal-box w-3/2 flex max-w-xl flex-col"
+          @submit.prevent="generateMemeWithPrompt"
+        >
+          <label for="memeTitle" class="label label-text">Meme Title</label>
+          <input
+            id="memeTitle"
+            required
+            type="text"
+            class="input input-bordered"
+            placeholder="Enter your meme title"
+            v-model="memeTitle"
+          />
+          <label for="fileSize" class="label label-text">
+            Max File Size: {{ targetFileSizeKB }} KB
+          </label>
+          <input
+            class="range range-primary"
+            id="fileSize"
+            type="range"
+            min="50"
+            max="2500"
+            step="50"
+            v-model="targetFileSizeKB"
+          />
+
+          <button class="btn btn-primary mt-4 w-32" type="submit">
+            Generate Meme
+          </button>
+        </form>
+        <div class="modal-backdrop" @click="saveModalOpen = false" />
+      </div>
+
       <div class="flex justify-center gap-4">
-        <button class="btn btn-primary w-48" @click="generateMemeWithPrompt">
+        <button class="btn btn-primary w-48" @click="saveModalOpen = true">
           Generate Meme
         </button>
         <button class="btn btn-secondary w-48" @click="toggleResizeLock">
           {{ resizeLocked.valueOf() ? "Unlock Canvas" : "Lock Canvas" }}
         </button>
-
         <button class="btn btn-primary w-48" @click="saveDraftHandler">
           Save Draft
         </button>
@@ -334,3 +370,14 @@ function toggleResizeLock() {
     </div>
   </div>
 </template>
+
+<style>
+.hidden {
+  display: none;
+}
+
+.center-vertically {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+</style>
