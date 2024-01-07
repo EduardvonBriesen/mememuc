@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { privatProcedure, publicProcedure, router } from "../trpc";
+import { createCanvas, loadImage } from "canvas";
 
 export const memeRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -81,6 +82,64 @@ export const memeRouter = router({
       });
 
       return meme;
+    }),
+  create: publicProcedure
+    .meta({ openapi: { method: "POST", path: "/create" } })
+    .input(
+      z.object({
+        template: z.string(),
+        memes: z
+          .object({
+            title: z.string(),
+            texts: z
+              .object({
+                text: z.string(),
+                x: z.number().default(0),
+                y: z.number().default(0),
+                size: z.number().default(20),
+                color: z.string().default("#000000"),
+              })
+              .array(),
+          })
+          .array(),
+      }),
+    )
+    .output(z.any())
+    .mutation(async ({ ctx, input }) => {
+      const memes = [];
+
+      for (const meme of input.memes) {
+        const image = await loadImage(input.template);
+        const canvas = createCanvas(image.width, image.height);
+        const canvasCtx = canvas.getContext("2d");
+        canvasCtx.drawImage(image, 0, 0, image.width, image.height);
+
+        for (const text of meme.texts) {
+          canvasCtx.font = `${text.size}px sans-serif`;
+          canvasCtx.fillStyle = text.color;
+          canvasCtx.fillText(text.text, text.x, text.y);
+        }
+
+        const memeLink = await ctx.prisma.meme
+          .create({
+            data: {
+              user: {
+                connect: {
+                  id: "655b6b0c07a007a18d5ca219", // test-user
+                },
+              },
+              title: meme.title,
+              base64: canvas.toDataURL(),
+            },
+          })
+          .then((meme) => ({
+            link: `http://localhost:5173/meme/${meme.id}`,
+          }));
+
+        memes.push(memeLink.link);
+      }
+
+      return memes;
     }),
   vote: privatProcedure
     .input(
