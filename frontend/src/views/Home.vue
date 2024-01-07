@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import {
   HandThumbUpIcon as UpIcon,
   HandThumbDownIcon as DownIcon,
+  MegaphoneIcon as SpeechIcon,
 } from "@heroicons/vue/24/solid";
 import { getMemes, getUserVotes, setUserVote } from "@/utils/api";
 import { store } from "@/utils/store";
@@ -11,13 +12,14 @@ import PlayfulText from "@/components/PlayfulText.vue";
 const memes = ref<
   {
     id: string;
-    base64: string;
+    user: string;
     link: string;
+    description: string;
+    base64: string;
     title: string;
     timestamp: string;
     upvotes: number;
     downvotes: number;
-    user: string;
   }[]
 >();
 
@@ -43,6 +45,43 @@ function updateVote(memeId: string, upvote: boolean) {
     setUserVote(memeId, upvote);
   }
 }
+
+function generateText(memeId: string): string {
+  const meme = memes.value?.find((meme) => meme.id === memeId);
+
+  if (!meme) {
+    return "This meme does not exist.";
+  }
+
+  const description =
+    meme.description === undefined
+      ? "There is no description for this meme."
+      : "The description is: " + meme.description;
+
+  const text =
+    "This meme was uploaded on " +
+    new Date(meme.timestamp).toLocaleDateString() +
+    " from user " +
+    meme.user +
+    ". It has " +
+    meme.upvotes +
+    " Upvotes and " +
+    meme.downvotes +
+    " Downvotes. " +
+    description;
+
+  return text;
+}
+
+function generateSpeech(memeId: string) {
+  const textToSpeak = generateText(memeId);
+
+  var synth = window.speechSynthesis;
+  console.log("Text2Speak: " + textToSpeak);
+  var utterance = new SpeechSynthesisUtterance(textToSpeak);
+  utterance.lang = "en-US";
+  synth.speak(utterance);
+}
 </script>
 
 <template>
@@ -54,6 +93,17 @@ function updateVote(memeId: string, upvote: boolean) {
         v-for="meme in memes"
         :key="meme.id"
       >
+        <!-- Speech Icon trigger-->
+        <div class="m-3 flex justify-end">
+          <button
+            class="btn btn-outline btn-info w-25 rounded-full"
+            @click="() => generateSpeech(meme.id)"
+          >
+            Describe it
+            <SpeechIcon class="h-4 w-4" />
+          </button>
+        </div>
+
         <figure
           @click="$router.push(`/meme/${meme.id}`)"
           class="cursor-pointer"
