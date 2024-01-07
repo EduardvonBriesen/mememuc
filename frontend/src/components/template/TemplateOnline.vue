@@ -13,10 +13,14 @@ const filteredTemplates = ref<{ id: string; name: string; src: string }[]>([]);
 const searchFilter = ref("");
 
 onMounted(async () => {
-  const data = await fetch("https://api.imgflip.com/get_memes")
-    .then((res) => res.json())
-    .then((data) => data);
-  templates.value = data.data.memes;
+  const data = await fetch("https://api.imgflip.com/get_memes").then((res) =>
+    res.json(),
+  );
+  templates.value = data.data.memes.map((meme: any) => ({
+    id: meme.id,
+    name: meme.name,
+    src: meme.url,
+  }));
 });
 
 watchEffect(() => {
