@@ -12,6 +12,15 @@ export const memeRouter = router({
 
     return meme;
   }),
+  all: publicProcedure.query(async ({ ctx }) => {
+    const memes = await ctx.prisma.meme.findMany({
+      select: {
+        id: true,
+      },
+    });
+
+    return memes;
+  }),
   find: publicProcedure
     .meta({ openapi: { method: "GET", path: "/memes" } })
     .input(

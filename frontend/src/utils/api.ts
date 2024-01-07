@@ -64,6 +64,10 @@ export function getMemes({
   return client.meme.find.query({ query, sort, page, limit, image });
 }
 
+export function getAllMemeIds() {
+  return client.meme.all.query();
+}
+
 export function createMeme(base64: string, title: string) {
   return client.meme.save.mutate({ base64, title });
 }
