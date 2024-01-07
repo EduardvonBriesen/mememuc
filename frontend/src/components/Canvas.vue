@@ -27,6 +27,7 @@ const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
 const targetFileSizeKB = ref(1000); // Default value
 const memeTitle = ref(""); // Default value
+const memeDescription = ref(""); // Default value
 const saveModalOpen = ref(false);
 
 const router = useRouter();
@@ -140,7 +141,11 @@ function setDrawingMode(value: boolean) {
   canvas.isDrawingMode = value;
 }
 
-function generateMeme(targetFileSizeKB: number, memeTitle: string) {
+function generateMeme(
+  targetFileSizeKB: number,
+  memeTitle: string,
+  description: string,
+) {
   // Check if there is a background image and it is not tainted
   if (
     canvas.backgroundImage &&
@@ -172,7 +177,7 @@ function generateMeme(targetFileSizeKB: number, memeTitle: string) {
     }
 
     //save image to mongoDB database
-    createMeme(dataUrl, memeTitle).then((res) => {
+    createMeme(dataUrl, memeTitle, description).then((res) => {
       console.log(res);
       openMemeSingleView(res.id);
     });
@@ -185,15 +190,8 @@ function generateMeme(targetFileSizeKB: number, memeTitle: string) {
 }
 
 function generateMemeWithPrompt() {
-  // const userInput = window.prompt(
-  //   "Enter the desired maximum file size in kilobytes (KB):",
-  //   "1000",
-  // );
-
-  // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000; // Default value
-
   // Call the generateMeme function with the target file size
-  generateMeme(targetFileSizeKB.value, memeTitle.value);
+  generateMeme(targetFileSizeKB.value, memeTitle.value, memeDescription.value);
   console.log("Target File Size:", targetFileSizeKB.value);
 }
 
@@ -327,6 +325,17 @@ function toggleResizeLock() {
             class="input input-bordered"
             placeholder="Enter your meme title"
             v-model="memeTitle"
+          />
+          <label for="memeDescription" class="label label-text">
+            Meme Description
+          </label>
+          <input
+            id="memeDescription"
+            required
+            type="text"
+            class="input input-bordered"
+            placeholder="Enter your meme description"
+            v-model="memeDescription"
           />
           <label for="fileSize" class="label label-text">
             Max File Size: {{ targetFileSizeKB }} KB

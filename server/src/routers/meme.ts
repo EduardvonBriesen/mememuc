@@ -78,6 +78,7 @@ export const memeRouter = router({
       z.object({
         base64: z.string(),
         title: z.string(), // Add title property here
+        description: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -90,6 +91,7 @@ export const memeRouter = router({
           },
           base64: input.base64,
           title: input.title, // Set title here
+          description: input.description,
         },
       });
 

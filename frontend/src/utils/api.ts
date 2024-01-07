@@ -68,8 +68,12 @@ export function getAllMemeIds() {
   return client.meme.all.query();
 }
 
-export function createMeme(base64: string, title: string) {
-  return client.meme.save.mutate({ base64, title });
+export function createMeme(
+  base64: string,
+  title: string,
+  description?: string,
+) {
+  return client.meme.save.mutate({ base64, title, description });
 }
 
 export function setUserVote(memeId: string, upvote?: boolean) {
