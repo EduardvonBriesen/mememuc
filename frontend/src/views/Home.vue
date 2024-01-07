@@ -4,25 +4,27 @@ import {
   HandThumbUpIcon as UpIcon,
   HandThumbDownIcon as DownIcon,
 } from "@heroicons/vue/24/solid";
-import { getAllMemes, getUserVotes, setUserVote } from "@/utils/api";
+import { getMemes, getUserVotes, setUserVote } from "@/utils/api";
 import { store } from "@/utils/store";
 import PlayfulText from "@/components/PlayfulText.vue";
 
 const memes = ref<
   {
     id: string;
-    timestamp: string;
     base64: string;
-    userId: string;
+    link: string;
+    title: string;
+    timestamp: string;
     upvotes: number;
     downvotes: number;
+    user: string;
   }[]
 >();
 
 const userVotes = ref<{ [key: string]: boolean | undefined }>({});
 
 onMounted(async () => {
-  getAllMemes().then((data) => {
+  getMemes({}).then((data) => {
     memes.value = data;
   });
   getUserVotes().then((data) => {

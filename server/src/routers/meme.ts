@@ -11,18 +11,15 @@ export const memeRouter = router({
 
     return meme;
   }),
-  all: publicProcedure.query(async ({ ctx }) => {
-    const memes = await ctx.prisma.meme.findMany();
-    return memes;
-  }),
-  search: publicProcedure
-    .meta({ openapi: { method: "GET", path: "/search" } })
+  find: publicProcedure
+    .meta({ openapi: { method: "GET", path: "/memes" } })
     .input(
       z.object({
         query: z.string().optional(),
         sort: z.enum(["new", "top", "hot"]).optional(),
-        page: z.number().int().positive().optional(),
-        limit: z.number().int().positive().optional(),
+        page: z.number().int().positive().default(1),
+        limit: z.number().int().positive().default(10),
+        image: z.boolean().default(false),
       }),
     )
     .output(z.any())
@@ -34,7 +31,7 @@ export const memeRouter = router({
             { upvotes: input.sort === "top" ? "desc" : undefined },
             { downvotes: input.sort === "hot" ? "desc" : undefined },
           ],
-          skip: input.page ? (input.page - 1) * (input.limit ?? 10) : undefined,
+          skip: (input.page - 1) * input.limit,
           take: input.limit,
           where: {
             title: {
@@ -47,6 +44,7 @@ export const memeRouter = router({
             upvotes: true,
             downvotes: true,
             timestamp: true,
+            base64: input.image,
             user: {
               select: {
                 username: true,

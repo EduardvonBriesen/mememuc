@@ -48,8 +48,18 @@ export function getMeme(id: string) {
   return client.meme.get.query(id);
 }
 
-export function getAllMemes() {
-  return client.meme.all.query();
+export function getMemes({
+  query,
+  page,
+  limit,
+  sort,
+}: {
+  query?: string;
+  page?: number;
+  limit?: number;
+  sort?: "new" | "hot" | "top";
+}) {
+  return client.meme.find.query({ query, sort, page, limit, image: true });
 }
 
 export function createMeme(base64: string) {
