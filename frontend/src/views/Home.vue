@@ -4,6 +4,7 @@ import { PlusCircleIcon } from "@heroicons/vue/24/solid";
 import { getMemes } from "@/utils/api";
 import PlayfulText from "@/components/PlayfulText.vue";
 import MemeCard from "@/components/MemeCard.vue";
+import SortFilter from "@/components/SortFilter.vue";
 
 const memes = ref<
   {
@@ -21,6 +22,20 @@ const memes = ref<
 
 const page = ref(1);
 const endOfPage = ref(false);
+const sortOption = ref("new");
+const filterOption = ref("");
+
+const updateSort = (option: string) => {
+  sortOption.value = option;
+  // Call the API or function to fetch memes with the updated sorting option
+  // For example: getMemes({ sort: option, image: true }).then((data) => { memes.value = data; });
+};
+
+const updateFilter = (option: string) => {
+  filterOption.value = option;
+  // Call the API or function to fetch memes with the updated filtering option
+  // For example: getMemes({ sort: sortOption.value, filter: option, image: true }).then((data) => { memes.value = data; });
+};
 
 onMounted(async () => {
   getMemes({ sort: "new", image: true }).then((data) => {
@@ -43,6 +58,8 @@ function loadMore() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
+    <SortFilter @sort-change="updateSort" @filter-change="updateFilter" />
+
     <PlayfulText word="Memes" />
     <MemeCard v-for="meme in memes" :key="meme.id" :meme="meme" />
     <button @click="loadMore" class="btn btn-primary m-4" v-if="!endOfPage">
