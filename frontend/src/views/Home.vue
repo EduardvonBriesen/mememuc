@@ -44,7 +44,7 @@ async function fetchMemes() {
     const data = await getMemes({
       query: filterOption.value,
       page: 1,
-      limit: 10,
+      limit: 10, // Adjust the limit as needed
       sort: sortOption.value,
       image: true,
     });
@@ -77,7 +77,11 @@ function loadMore() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <SortFilter @sort-change="updateSort" @filter-change="updateFilter" />
+    <SortFilter
+      :emit="$emit"
+      @sort-change="updateSort"
+      @filter-change="updateFilter"
+    />
 
     <PlayfulText word="Memes" />
     <MemeCard v-for="meme in memes" :key="meme.id" :meme="meme" />

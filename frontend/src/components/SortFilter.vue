@@ -1,4 +1,24 @@
-// SortFilter.vue
+<script setup lang="ts">
+import { ref, defineProps } from "vue";
+
+const { emit } = defineProps(["emit"]);
+
+const sortOption = ref("new");
+const filterOption = ref("");
+
+const applySort = () => {
+  // Emit an event to notify the parent component (home.vue) about the sorting option change
+  emit("sort-change", sortOption.value);
+  console.log(sortOption.value);
+};
+
+const applyFilter = () => {
+  // Emit an event to notify the parent component (home.vue) about the filtering option change
+  emit("filter-change", filterOption.value);
+  console.log(filterOption.value);
+};
+</script>
+
 <template>
   <div class="sort-filter">
     <label for="sort">Sort By:</label>
@@ -20,25 +40,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-
-const sortOption = ref("new");
-const filterOption = ref("");
-
-const applySort = () => {
-  // Emit an event to notify the parent component (home.vue) about the sorting option change
-  emit("sort-change", sortOption.value);
-};
-
-const applyFilter = () => {
-  // Emit an event to notify the parent component (home.vue) about the filtering option change
-  emit("filter-change", filterOption.value);
-};
-</script>
-
 <style scoped>
-/* Add your styling for the SortFilter component here */
 .sort-filter {
   display: flex;
   align-items: center;
