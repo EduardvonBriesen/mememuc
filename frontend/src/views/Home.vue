@@ -27,15 +27,34 @@ const filterOption = ref("");
 
 const updateSort = (option: string) => {
   sortOption.value = option;
-  // Call the API or function to fetch memes with the updated sorting option
-  // For example: getMemes({ sort: option, image: true }).then((data) => { memes.value = data; });
+
+  // Call the API to fetch memes with the updated sorting option
+  fetchMemes();
 };
 
 const updateFilter = (option: string) => {
   filterOption.value = option;
-  // Call the API or function to fetch memes with the updated filtering option
-  // For example: getMemes({ sort: sortOption.value, filter: option, image: true }).then((data) => { memes.value = data; });
+
+  // Call the API to fetch memes with the updated filtering option
+  fetchMemes();
 };
+
+async function fetchMemes() {
+  try {
+    const data = await getMemes({
+      query: filterOption.value,
+      page: 1,
+      limit: 10,
+      sort: sortOption.value,
+      image: true,
+    });
+
+    memes.value = data;
+  } catch (error) {
+    console.error("Error fetching memes:", error);
+    // Handle the error, show an error message, or retry the request.
+  }
+}
 
 onMounted(async () => {
   getMemes({ sort: "new", image: true }).then((data) => {
