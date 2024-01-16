@@ -7,6 +7,9 @@ export const memeRouter = router({
     const meme = await ctx.prisma.meme.findUnique({
       where: {
         id: input,
+        visibility: {
+          in: ["PUBLIC", "UNLISTED"],
+        },
       },
     });
 
@@ -14,6 +17,9 @@ export const memeRouter = router({
   }),
   all: publicProcedure.query(async ({ ctx }) => {
     const memes = await ctx.prisma.meme.findMany({
+      where: {
+        visibility: "PUBLIC",
+      },
       select: {
         id: true,
       },
@@ -47,6 +53,7 @@ export const memeRouter = router({
             title: {
               contains: input.query,
             },
+            visibility: "PUBLIC",
           },
           select: {
             id: true,
@@ -79,6 +86,7 @@ export const memeRouter = router({
         base64: z.string(),
         title: z.string(), // Add title property here
         description: z.string().optional(),
+        visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]).default("PUBLIC"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -92,6 +100,7 @@ export const memeRouter = router({
           base64: input.base64,
           title: input.title, // Set title here
           description: input.description,
+          visibility: input.visibility,
         },
       });
 

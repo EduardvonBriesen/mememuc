@@ -25,9 +25,10 @@ let lastPosY = 0;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
-const targetFileSizeKB = ref(1000); // Default value
-const memeTitle = ref(""); // Default value
-const memeDescription = ref(""); // Default value
+const targetFileSizeKB = ref(1000);
+const memeTitle = ref("");
+const memeDescription = ref("");
+const memeVisibility = ref<"PUBLIC" | "UNLISTED" | "PRIVATE">("PUBLIC");
 const saveModalOpen = ref(false);
 
 const router = useRouter();
@@ -177,10 +178,12 @@ function generateMeme(
     }
 
     //save image to mongoDB database
-    createMeme(dataUrl, memeTitle, description).then((res) => {
-      console.log(res);
-      openMemeSingleView(res.id);
-    });
+    createMeme(dataUrl, memeTitle, description, memeVisibility.value).then(
+      (res) => {
+        console.log(res);
+        openMemeSingleView(res.id);
+      },
+    );
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
   } else {
     console.error(
@@ -349,6 +352,16 @@ function toggleResizeLock() {
             step="50"
             v-model="targetFileSizeKB"
           />
+          <label for="visibility" class="label label-text"> Visibility </label>
+          <select
+            class="select select-bordered"
+            id="visibility"
+            v-model="memeVisibility"
+          >
+            <option value="PUBLIC">Public</option>
+            <option value="UNLISTED">Unlisted</option>
+            <option value="PRIVATE">Private</option>
+          </select>
 
           <button class="btn btn-primary mt-4 w-32" type="submit">
             Generate Meme

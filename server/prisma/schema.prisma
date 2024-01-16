@@ -15,6 +15,12 @@ type UsersTemplates {
   base64 String
 }
 
+enum Visibility {
+  PUBLIC
+  UNLISTED
+  PRIVATE
+}
+
 model Draft {
   id               String   @id @default(auto()) @map("_id") @db.ObjectId
   timestamp        DateTime @default(now())
@@ -27,16 +33,17 @@ model Draft {
 }
 
 model Meme {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id          String     @id @default(auto()) @map("_id") @db.ObjectId
   base64      String
-  title       String    @default("")
-  timestamp   DateTime  @default(now())
-  userId      String    @db.ObjectId
-  user        User      @relation(fields: [userId], references: [id])
-  upvotes     Int       @default(0)
-  downvotes   Int       @default(0)
+  title       String     @default("")
+  timestamp   DateTime   @default(now())
+  userId      String     @db.ObjectId
+  user        User       @relation(fields: [userId], references: [id])
+  upvotes     Int        @default(0)
+  downvotes   Int        @default(0)
   Comment     Comment[]
-  description String    @default("")
+  description String     @default("")
+  visibility  Visibility @default(PUBLIC)
 }
 
 model Comment {

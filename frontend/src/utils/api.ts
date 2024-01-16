@@ -2,7 +2,7 @@ import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "../../../server";
 import { store } from "./store";
 
-const client = createTRPCProxyClient<AppRouter>({
+export const client = createTRPCProxyClient<AppRouter>({
   links: [
     httpBatchLink({
       url: "http://localhost:3000",
@@ -72,8 +72,9 @@ export function createMeme(
   base64: string,
   title: string,
   description?: string,
+  visibility?: "PUBLIC" | "UNLISTED" | "PRIVATE",
 ) {
-  return client.meme.save.mutate({ base64, title, description });
+  return client.meme.save.mutate({ base64, title, description, visibility });
 }
 
 export function setUserVote(memeId: string, upvote?: boolean) {
