@@ -51,12 +51,56 @@ export const memeRouter = router({
       console.log(input);
 
       if (input.filterOption && ["upvotes"].includes(input.filterOption)) {
-        console.log("Filtering for: ", input.filterOption); // TODO: Filtern nach upvotes
+        console.log("Filtering for: ", input.filterOption);
+        if (
+          input.comparisonOperator &&
+          ["="].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            equals: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          [">"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            gt: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          ["<"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            lt: input.numericalValue,
+          };
+        }
       } else if (
         input.filterOption &&
         ["downvotes"].includes(input.filterOption)
       ) {
-        console.log("Filtering for: ", input.filterOption); // TODO: Filtern nach downvotes
+        console.log("Filtering for: ", input.filterOption);
+        if (
+          input.comparisonOperator &&
+          ["="].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            equals: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          [">"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            gt: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          ["<"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            lt: input.numericalValue,
+          };
+        }
       } else if (input.filterOption && ["title"].includes(input.filterOption)) {
         filterConditions.title = {
           contains: input.textFilter, // ist stand jetzt case sensitive

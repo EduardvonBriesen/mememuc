@@ -64,10 +64,10 @@ const updateNumericalFilter = () => {
 
     <template v-if="['upvotes', 'downvotes'].includes(filterOption)">
       <label for="comparisonOperator">Operator:</label>
-      <select v-model="comparisonOperator">
+      <select v-model="comparisonOperator" @change="applyFilter">
         <option value="=">Equal to</option>
-        <option value=">=">Greater than or equal to</option>
-        <option value="<=">Less than or equal to</option>
+        <!-- <option value=">=">Greater than or equal to</option>
+        <option value="<=">Less than or equal to</option> -->
         <option value=">">Greater than</option>
         <option value="<">Less than</option>
       </select>

@@ -15,8 +15,8 @@ const memes = ref<
     base64: string;
     title: string;
     timestamp: string;
-    upvotes: number;
-    downvotes: number;
+    upvotes: number | null;
+    downvotes: number | null;
   }[]
 >();
 
@@ -81,7 +81,7 @@ async function fetchMemes() {
       image: true,
       filterOption: filterOption.value,
       comparisonOperator: comparisonOperator.value,
-      numericalValue: numericalValue.value,
+      numericalValue: isNaN(numericalValue.value) ? 0 : numericalValue.value,
       textFilter: textFilter.value,
     });
 
