@@ -79,6 +79,10 @@ async function fetchMemes() {
       limit: 10,
       sort: sortOption.value,
       image: true,
+      filterOption: filterOption.value,
+      comparisonOperator: comparisonOperator.value,
+      numericalValue: numericalValue.value,
+      textFilter: textFilter.value,
     });
 
     memes.value = data;

@@ -54,14 +54,32 @@ export function getMemes({
   limit,
   sort,
   image = false,
+  filterOption,
+  comparisonOperator,
+  numericalValue,
+  textFilter,
 }: {
   query?: string;
   page?: number;
   limit?: number;
-  sort?: "new" | "hot" | "top";
+  sort?: "new" | "old" | "hot" | "top";
   image?: boolean;
+  filterOption?: string;
+  comparisonOperator?: string;
+  numericalValue?: number;
+  textFilter?: string;
 }) {
-  return client.meme.find.query({ query, sort, page, limit, image });
+  return client.meme.find.query({
+    query,
+    sort,
+    page,
+    limit,
+    image,
+    filterOption,
+    comparisonOperator,
+    numericalValue,
+    textFilter,
+  });
 }
 
 export function getAllMemeIds() {

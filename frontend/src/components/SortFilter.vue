@@ -11,7 +11,7 @@ const sortOption = ref("new");
 const filterOption = ref("");
 const textFilter = ref("");
 const comparisonOperator = ref("=");
-const numericalValue = ref("");
+const numericalValue = ref("0");
 
 const applySort = () => {
   sortChange(sortOption.value);
@@ -47,6 +47,7 @@ const updateNumericalFilter = () => {
     <label for="sort">Sort By:</label>
     <select v-model="sortOption" @change="applySort">
       <option value="new">Newest</option>
+      <option value="old">Oldest</option>
       <option value="top">Top Rated</option>
       <option value="hot">Worst Rated</option>
     </select>
@@ -54,8 +55,8 @@ const updateNumericalFilter = () => {
     <label for="filter">Filter Option:</label>
     <select v-model="filterOption" @change="applyFilter">
       <option value="">None</option>
-      <!-- <option value="title">Title</option>
-      <option value="description">Description</option> -->
+      <option value="title">Title</option>
+      <option value="description">Description</option>
       <option value="upvotes">Upvotes</option>
       <option value="downvotes">Downvotes</option>
       <!-- <option value="timestamp">Timestamp</option> -->

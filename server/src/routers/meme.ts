@@ -12,6 +12,7 @@ export const memeRouter = router({
 
     return meme;
   }),
+
   all: publicProcedure.query(async ({ ctx }) => {
     const memes = await ctx.prisma.meme.findMany({
       select: {
@@ -21,33 +22,67 @@ export const memeRouter = router({
 
     return memes;
   }),
+
   find: publicProcedure
     .meta({ openapi: { method: "GET", path: "/memes" } })
     .input(
       z.object({
         query: z.string().optional(),
-        sort: z.enum(["new", "top", "hot"]).optional(),
+        sort: z.enum(["new", "old", "top", "hot"]).optional(),
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(10),
         image: z.boolean().default(false),
+        filterOption: z.string().optional(),
+        textFilter: z.string().optional(),
+        comparisonOperator: z.string().optional(),
+        numericalValue: z.number().optional(),
       }),
     )
     .output(z.any())
     .query(async ({ ctx, input }) => {
+      const filterConditions: any = {};
+
+      if (input.query) {
+        filterConditions.title = {
+          contains: input.query,
+        };
+      }
+
+      console.log(input);
+
+      if (input.filterOption && ["upvotes"].includes(input.filterOption)) {
+        console.log("Filtering for: ", input.filterOption); // TODO: Filtern nach upvotes
+      } else if (
+        input.filterOption &&
+        ["downvotes"].includes(input.filterOption)
+      ) {
+        console.log("Filtering for: ", input.filterOption); // TODO: Filtern nach downvotes
+      } else if (input.filterOption && ["title"].includes(input.filterOption)) {
+        filterConditions.title = {
+          contains: input.textFilter, // ist stand jetzt case sensitive
+          mode: "insensitive", // hiermit ist comparison case-insensitive
+        };
+      } else if (
+        input.filterOption &&
+        ["description"].includes(input.filterOption)
+      ) {
+        filterConditions.description = {
+          contains: input.textFilter, // ist stand jetzt case sensitive
+          mode: "insensitive", // hiermit ist comparison case-insensitive
+        };
+      }
+
       const memes = await ctx.prisma.meme
         .findMany({
           orderBy: [
             { timestamp: input.sort === "new" ? "desc" : undefined },
-            { upvotes: input.sort === "top" ? "desc" : undefined },
-            { downvotes: input.sort === "hot" ? "desc" : undefined },
+            { timestamp: input.sort === "old" ? "asc" : undefined },
+            { upvotes: input.sort === "top" ? "desc" : undefined }, // welches Verhalten ist denn hier erwünscht?
+            { downvotes: input.sort === "hot" ? "desc" : undefined }, // angezeigt wird Summe, abgefragt wird einzelner Wert -> verwirrend
           ],
           skip: (input.page - 1) * input.limit,
           take: input.limit,
-          where: {
-            title: {
-              contains: input.query,
-            },
-          },
+          where: filterConditions,
           select: {
             id: true,
             title: true,
@@ -73,6 +108,7 @@ export const memeRouter = router({
 
       return memes;
     }),
+
   save: privatProcedure
     .input(
       z.object({
@@ -97,6 +133,7 @@ export const memeRouter = router({
 
       return meme;
     }),
+
   create: publicProcedure
     .meta({ openapi: { method: "POST", path: "/create" } })
     .input(
@@ -155,6 +192,7 @@ export const memeRouter = router({
 
       return memes;
     }),
+
   vote: privatProcedure
     .input(
       z.object({
