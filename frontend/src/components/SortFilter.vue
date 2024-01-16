@@ -24,16 +24,16 @@ const applyFilter = () => {
     <select v-model="sortOption" @change="applySort">
       <option value="new">Newest</option>
       <option value="top">Top Rated</option>
-      <option value="hot">Hot</option>
+      <option value="hot">Lowest Rated</option>
     </select>
 
-    <label for="filter">Filter By:</label>
+    <label for="filter">Filter:</label>
     <select v-model="filterOption" @change="applyFilter">
       <option value="">None</option>
       <option value="title">Title</option>
       <option value="upvotes">Upvotes</option>
       <option value="downvotes">Downvotes</option>
-      <option value="timestamp">Timestamp</option>
+      <!-- <option value="timestamp">Timestamp</option> -->
       <option value="description">Description</option>
     </select>
   </div>

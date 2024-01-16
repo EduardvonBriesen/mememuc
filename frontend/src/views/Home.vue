@@ -39,7 +39,7 @@ const updateFilter = (option: string) => {
   console.log("updateFilter");
   console.log("Filter Option:", option);
   filterOption.value = option;
-  console.log(sortOption.value);
+  console.log(filterOption.value);
 
   // Call the API to fetch memes with the updated filtering option
   fetchMemes();
@@ -48,9 +48,9 @@ const updateFilter = (option: string) => {
 async function fetchMemes() {
   try {
     const data = await getMemes({
-      query: filterOption.value,
+      // query: "filterOption.value",
       page: 1,
-      limit: 10, // Adjust the limit as needed
+      limit: 10,
       sort: sortOption.value,
       image: true,
     });
