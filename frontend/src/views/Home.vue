@@ -25,6 +25,8 @@ const endOfPage = ref(false);
 const sortOption = ref("new");
 const filterOption = ref("");
 const textFilter = ref("");
+const comparisonOperator = ref("=");
+const numericalValue = ref(0);
 
 const updateSort = (option: string) => {
   console.log("updateSort");
@@ -46,14 +48,28 @@ const updateFilter = (option: string) => {
   fetchMemes();
 };
 
-const updateTextFilter = (value: string) => {
-  console.log("updateTextFilter");
-  console.log("Text Filter:", value);
-  textFilter.value = value;
+const updateFilterInput = (value: any) => {
+  console.log("updateFilterInput");
+  console.log("Filter Input:", value);
+  textFilter.value = value.textFilter;
+  comparisonOperator.value = value.comparisonOperator;
+  numericalValue.value = value.numericalValue;
+  console.log(textFilter.value);
+  console.log(comparisonOperator.value);
+  console.log(numericalValue.value);
 
   // Call the API to fetch memes with the updated text filter
   fetchMemes();
 };
+
+// const updateNumericalFilter = (value: number) => {
+//   console.log("updateNumericalFilter");
+//   console.log("Numerical Filter Value:", value);
+//   numericalValue.value = value;
+
+//   // Call the API to fetch memes with the updated numerical filter
+//   fetchMemes();
+// };
 
 async function fetchMemes() {
   try {
@@ -96,7 +112,7 @@ function loadMore() {
     <SortFilter
       :sortChange="updateSort"
       :filterChange="updateFilter"
-      :textFilterChange="updateTextFilter"
+      :inputFilterChange="updateFilterInput"
     />
 
     <PlayfulText word="Memes" />

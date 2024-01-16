@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
 
-const { sortChange, filterChange, textFilterChange } = defineProps([
+const { sortChange, filterChange, inputFilterChange } = defineProps([
   "sortChange",
   "filterChange",
-  "textFilterChange",
+  "inputFilterChange",
 ]);
 
 const sortOption = ref("new");
 const filterOption = ref("");
 const textFilter = ref("");
+const comparisonOperator = ref("=");
+const numericalValue = ref("");
 
 const applySort = () => {
   sortChange(sortOption.value);
@@ -17,10 +19,26 @@ const applySort = () => {
 
 const applyFilter = () => {
   filterChange(filterOption.value);
+
+  if (!["upvotes", "downvotes"].includes(filterOption.value)) {
+    inputFilterChange({
+      textFilter: textFilter.value,
+      comparisonOperator: "",
+      numericalValue: 0,
+    });
+  } else {
+    inputFilterChange({
+      textFilter: "",
+      comparisonOperator: comparisonOperator.value,
+      numericalValue: parseInt(numericalValue.value),
+    });
+  }
 };
 
-const applyTextFilter = () => {
-  textFilterChange(textFilter.value);
+const updateNumericalFilter = () => {
+  if (["upvotes", "downvotes"].includes(filterOption.value)) {
+    applyFilter();
+  }
 };
 </script>
 
@@ -30,7 +48,7 @@ const applyTextFilter = () => {
     <select v-model="sortOption" @change="applySort">
       <option value="new">Newest</option>
       <option value="top">Top Rated</option>
-      <option value="hot">Lowest Rated</option>
+      <option value="hot">Worst Rated</option>
     </select>
 
     <label for="filter">Filter Option:</label>
@@ -43,8 +61,28 @@ const applyTextFilter = () => {
       <!-- <option value="timestamp">Timestamp</option> -->
     </select>
 
-    <label for="textFilter">Filter Value:</label>
-    <input type="text" v-model="textFilter" @input="applyTextFilter" />
+    <template v-if="['upvotes', 'downvotes'].includes(filterOption)">
+      <label for="comparisonOperator">Operator:</label>
+      <select v-model="comparisonOperator">
+        <option value="=">Equal to</option>
+        <option value=">=">Greater than or equal to</option>
+        <option value="<=">Less than or equal to</option>
+        <option value=">">Greater than</option>
+        <option value="<">Less than</option>
+      </select>
+
+      <label for="numericalValue">Value:</label>
+      <input
+        type="number"
+        v-model="numericalValue"
+        @input="updateNumericalFilter"
+      />
+    </template>
+
+    <template v-if="['title', 'description'].includes(filterOption)">
+      <label for="textFilter">Filter Value:</label>
+      <input type="text" v-model="textFilter" @input="applyFilter" />
+    </template>
   </div>
 </template>
 
@@ -53,5 +91,10 @@ const applyTextFilter = () => {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+select,
+input {
+  color: #000;
 }
 </style>
