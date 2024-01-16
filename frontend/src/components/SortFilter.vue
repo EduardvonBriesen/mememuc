@@ -1,21 +1,20 @@
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
 
-const { emit } = defineProps(["emit"]);
+const { sortChange, filterChange } = defineProps([
+  "sortChange",
+  "filterChange",
+]);
 
 const sortOption = ref("new");
 const filterOption = ref("");
 
 const applySort = () => {
-  // Emit an event to notify the parent component (home.vue) about the sorting option change
-  emit("sort-change", sortOption.value);
-  console.log(sortOption.value);
+  sortChange(sortOption.value);
 };
 
 const applyFilter = () => {
-  // Emit an event to notify the parent component (home.vue) about the filtering option change
-  emit("filter-change", filterOption.value);
-  console.log(filterOption.value);
+  filterChange(filterOption.value);
 };
 </script>
 

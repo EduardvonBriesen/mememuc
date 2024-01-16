@@ -26,14 +26,20 @@ const sortOption = ref("new");
 const filterOption = ref("");
 
 const updateSort = (option: string) => {
+  console.log("updateSort");
+  console.log("Sort Option:", option);
   sortOption.value = option;
+  console.log(sortOption.value);
 
   // Call the API to fetch memes with the updated sorting option
   fetchMemes();
 };
 
 const updateFilter = (option: string) => {
+  console.log("updateFilter");
+  console.log("Filter Option:", option);
   filterOption.value = option;
+  console.log(sortOption.value);
 
   // Call the API to fetch memes with the updated filtering option
   fetchMemes();
@@ -77,11 +83,7 @@ function loadMore() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <SortFilter
-      :emit="$emit"
-      @sort-change="updateSort"
-      @filter-change="updateFilter"
-    />
+    <SortFilter :sortChange="updateSort" :filterChange="updateFilter" />
 
     <PlayfulText word="Memes" />
     <MemeCard v-for="meme in memes" :key="meme.id" :meme="meme" />
