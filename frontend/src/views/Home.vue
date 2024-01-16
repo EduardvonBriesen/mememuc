@@ -24,6 +24,7 @@ const page = ref(1);
 const endOfPage = ref(false);
 const sortOption = ref("new");
 const filterOption = ref("");
+const textFilter = ref("");
 
 const updateSort = (option: string) => {
   console.log("updateSort");
@@ -36,7 +37,7 @@ const updateSort = (option: string) => {
 };
 
 const updateFilter = (option: string) => {
-  console.log("updateFilter");
+  console.log("updateFilterOption");
   console.log("Filter Option:", option);
   filterOption.value = option;
   console.log(filterOption.value);
@@ -45,10 +46,19 @@ const updateFilter = (option: string) => {
   fetchMemes();
 };
 
+const updateTextFilter = (value: string) => {
+  console.log("updateTextFilter");
+  console.log("Text Filter:", value);
+  textFilter.value = value;
+
+  // Call the API to fetch memes with the updated text filter
+  fetchMemes();
+};
+
 async function fetchMemes() {
   try {
     const data = await getMemes({
-      // query: "filterOption.value",
+      // query: textFilter.value,
       page: 1,
       limit: 10,
       sort: sortOption.value,
@@ -83,7 +93,11 @@ function loadMore() {
 
 <template>
   <div class="flex flex-col items-center gap-4">
-    <SortFilter :sortChange="updateSort" :filterChange="updateFilter" />
+    <SortFilter
+      :sortChange="updateSort"
+      :filterChange="updateFilter"
+      :textFilterChange="updateTextFilter"
+    />
 
     <PlayfulText word="Memes" />
     <MemeCard v-for="meme in memes" :key="meme.id" :meme="meme" />
