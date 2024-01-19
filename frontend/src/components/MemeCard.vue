@@ -19,6 +19,10 @@ const props = defineProps<{
     timestamp: string;
     upvotes: number;
     downvotes: number;
+    text_1: string;
+    text_2: string;
+    text_3: string;
+    text_4: string;
   };
 }>();
 
@@ -43,6 +47,12 @@ function updateVote(memeId: string, upvote: boolean) {
 }
 
 function generateSpeech() {
+  console.log("Testing Text: ");
+  console.log("Text_1: " + props.meme.text_1);
+  console.log("Text_2: " + props.meme.text_2);
+  console.log("Text_3: " + props.meme.text_3);
+  console.log("Text_4: " + props.meme.text_4);
+
   const description =
     props.meme.description === undefined
       ? "There is no description for this meme."
@@ -61,6 +71,7 @@ function generateSpeech() {
     description;
 
   var synth = window.speechSynthesis;
+  console.log("Text: " + text);
   var utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   synth.speak(utterance);
