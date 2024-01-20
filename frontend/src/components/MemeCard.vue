@@ -19,10 +19,7 @@ const props = defineProps<{
     timestamp: string;
     upvotes: number;
     downvotes: number;
-    text_1: string;
-    text_2: string;
-    text_3: string;
-    text_4: string;
+    usertexts: string;
   };
 }>();
 
@@ -48,10 +45,7 @@ function updateVote(memeId: string, upvote: boolean) {
 
 function generateSpeech() {
   console.log("Testing Text: ");
-  console.log("Text_1: " + props.meme.text_1);
-  console.log("Text_2: " + props.meme.text_2);
-  console.log("Text_3: " + props.meme.text_3);
-  console.log("Text_4: " + props.meme.text_4);
+  console.log("usertexts: " + props.meme.usertexts);
 
   const description =
     props.meme.description === undefined

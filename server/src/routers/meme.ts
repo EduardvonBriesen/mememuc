@@ -87,10 +87,7 @@ export const memeRouter = router({
         title: z.string(), // Add title property here
         description: z.string().optional(),
         visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]).default("PUBLIC"),
-        text_1: z.string().optional(),
-        text_2: z.string().optional(),
-        text_3: z.string().optional(),
-        text_4: z.string().optional(),
+        usertexts: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -105,10 +102,7 @@ export const memeRouter = router({
           title: input.title, // Set title here
           description: input.description,
           visibility: input.visibility,
-          text_1: input.text_1,
-          text_2: input.text_2,
-          text_3: input.text_3,
-          text_4: input.text_4,
+          usertexts: input.usertexts,
         },
       });
 

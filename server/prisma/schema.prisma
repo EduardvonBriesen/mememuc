@@ -44,10 +44,7 @@ model Meme {
   Comment     Comment[]
   description String     @default("")
   visibility  Visibility @default(PUBLIC)
-  text_1      String     @default("")
-  text_2      String     @default("")
-  text_3      String     @default("")
-  text_4      String     @default("")
+  usertexts   String     @default("")
   
 }
 

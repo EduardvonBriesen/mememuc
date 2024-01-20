@@ -30,11 +30,7 @@ const memeTitle = ref("");
 const memeDescription = ref("");
 const memeVisibility = ref<"PUBLIC" | "UNLISTED" | "PRIVATE">("PUBLIC");
 const saveModalOpen = ref(false);
-const text_1 = ref("");
-const text_2 = ref("");
-const text_3 = ref("");
-const text_4 = ref("");
-var textCount = 0;
+const usertexts = ref("");
 let textObjects = [];
 
 const router = useRouter();
@@ -82,24 +78,28 @@ function applyLockStateToObjects() {
 }
 
 function addText() {
-  if (textObjects.length >= 5) {
-    // Der Benutzer hat bereits die maximale Anzahl erreicht
-    console.log("Du kannst nicht mehr Texte hinzufügen.");
-    return;
-  }
-  const text = new fabric.IText("hello world", {
+  const text = new fabric.IText("Funny text goes here...", {
     left: ((activeObject.value as fabric.IText)?.left ?? 0) + 10,
     top: ((activeObject.value as fabric.IText)?.top ?? 0) + 10,
   });
   canvas.add(text);
   canvas.setActiveObject(text);
-  textObjects[textCount] = text;
-  console.log("Textobjects[ " + textCount + "]: " + textObjects[textCount]);
-  textCount++;
+  textObjects.push(text);
 
   // Possiblility to lock text with the resize lock
   // text.selectable = !resizeLocked.value;
   // text.evented = !resizeLocked.value;
+}
+
+function saveText() {
+  const validTextObjects = canvas
+    .getObjects()
+    .filter((obj) => obj instanceof fabric.IText && textObjects.includes(obj));
+  usertexts.value = validTextObjects
+    .map((textObj: fabric.IText) => textObj.text)
+    .join(". ");
+
+  console.log("Textinhalte: " + usertexts);
 }
 
 async function setTemplate(src: string) {
@@ -160,7 +160,7 @@ function generateMeme(
   targetFileSizeKB: number,
   memeTitle: string,
   description: string,
-  text_1: string,
+  usertexts: string,
 ) {
   // Check if there is a background image and it is not tainted
   if (
@@ -198,7 +198,7 @@ function generateMeme(
       memeTitle,
       description,
       memeVisibility.value,
-      text_1,
+      usertexts,
     ).then((res) => {
       console.log(res);
       openMemeSingleView(res.id);
@@ -212,12 +212,13 @@ function generateMeme(
 }
 
 function generateMemeWithPrompt() {
+  saveText();
   // Call the generateMeme function with the target file size
   generateMeme(
     targetFileSizeKB.value,
     memeTitle.value,
     memeDescription.value,
-    text_1.value,
+    usertexts.value,
   );
   console.log("Target File Size:", targetFileSizeKB.value);
 }
@@ -363,15 +364,6 @@ function toggleResizeLock() {
             class="input input-bordered"
             placeholder="Enter your meme description"
             v-model="memeDescription"
-          />
-          <label for="text_1" class="label label-text"> text_1 </label>
-          <input
-            id="text_1"
-            required
-            type="text"
-            class="input input-bordered"
-            placeholder="text_1"
-            v-model="text_1"
           />
           <label for="fileSize" class="label label-text">
             Max File Size: {{ targetFileSizeKB }} KB
