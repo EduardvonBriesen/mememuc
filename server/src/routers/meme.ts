@@ -62,6 +62,7 @@ export const memeRouter = router({
             downvotes: true,
             timestamp: true,
             description: true,
+            usertexts: true,
             base64: input.image,
             user: {
               select: {

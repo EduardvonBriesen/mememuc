@@ -44,16 +44,15 @@ function updateVote(memeId: string, upvote: boolean) {
 }
 
 function generateSpeech() {
-  console.log("Testing Text: ");
-  console.log("usertexts: " + props.meme.usertexts);
-
   const description =
     props.meme.description === undefined
       ? "There is no description for this meme."
-      : "The description is: " + props.meme.description;
+      : "The description is: " + props.meme.description + ".";
 
   const text =
-    "This meme was uploaded on " +
+    "The meme " +
+    props.meme.title +
+    " was uploaded on " +
     new Date(props.meme.timestamp).toLocaleDateString() +
     " from user " +
     props.meme.user +
@@ -62,7 +61,9 @@ function generateSpeech() {
     " Upvotes and " +
     props.meme.downvotes +
     " Downvotes. " +
-    description;
+    description +
+    " This meme contains the following texts: " +
+    props.meme.usertexts;
 
   var synth = window.speechSynthesis;
   console.log("Text: " + text);
