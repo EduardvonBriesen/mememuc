@@ -62,10 +62,16 @@ export const memeRouter = router({
             downvotes: true,
             timestamp: true,
             description: true,
+            usertexts: true,
             base64: input.image,
             user: {
               select: {
                 username: true,
+              },
+            },
+            template: {
+              select: {
+                name: true,
               },
             },
           },
@@ -74,6 +80,7 @@ export const memeRouter = router({
           memes.map((meme) => ({
             ...meme,
             user: meme.user.username,
+            template: meme.template?.name,
             link: `http://localhost:5173/meme/${meme.id}`,
           })),
         );
@@ -87,6 +94,8 @@ export const memeRouter = router({
         title: z.string(), // Add title property here
         description: z.string().optional(),
         visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]).default("PUBLIC"),
+        usertexts: z.string().optional(),
+        templateId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -101,6 +110,12 @@ export const memeRouter = router({
           title: input.title, // Set title here
           description: input.description,
           visibility: input.visibility,
+          usertexts: input.usertexts,
+          template: {
+            connect: {
+              id: input.templateId,
+            },
+          },
         },
       });
 

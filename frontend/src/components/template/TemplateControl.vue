@@ -20,7 +20,7 @@ import { getAllTemplates, getTemplateImage } from "@/utils/api";
 
 interface Props {
   initTemplate: boolean;
-  setTemplate: (id: string) => void;
+  setTemplate: (src: string, id?: string) => void;
   setDrawingMode: (value: boolean) => void;
 }
 
@@ -51,9 +51,10 @@ onMounted(async () => {
 
   index.value = Math.floor(Math.random() * templates.value.length);
 
-  const src = await getTemplateImage(templates.value[index.value].id);
+  const templateId = templates.value[index.value].id;
+  const src = await getTemplateImage(templateId);
 
-  props.setTemplate(src);
+  props.setTemplate(src, templateId);
 });
 
 function goToPrevious() {
@@ -63,7 +64,10 @@ function goToPrevious() {
     index.value = templates.value.length - 1;
   }
   async function setTemplateImage() {
-    props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+    props.setTemplate(
+      await getTemplateImage(templates.value[index.value].id),
+      templates.value[index.value].id,
+    );
   }
 
   setTemplateImage();
@@ -75,13 +79,19 @@ async function goToNext() {
   if (index.value >= templates.value.length) {
     index.value = 0;
   }
-  props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+  props.setTemplate(
+    await getTemplateImage(templates.value[index.value].id),
+    templates.value[index.value].id,
+  );
 }
 
 async function goToRandom() {
   emit("clearCanvas");
   index.value = Math.floor(Math.random() * templates.value.length);
-  props.setTemplate(await getTemplateImage(templates.value[index.value].id));
+  props.setTemplate(
+    await getTemplateImage(templates.value[index.value].id),
+    templates.value[index.value].id,
+  );
 }
 
 async function drawTemplate() {

@@ -73,8 +73,15 @@ export function createMeme(
   title: string,
   description?: string,
   visibility?: "PUBLIC" | "UNLISTED" | "PRIVATE",
+  usertexts?: string,
 ) {
-  return client.meme.save.mutate({ base64, title, description, visibility });
+  return client.meme.save.mutate({
+    base64,
+    title,
+    description,
+    visibility,
+    usertexts,
+  });
 }
 
 export function setUserVote(memeId: string, upvote?: boolean) {
