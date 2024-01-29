@@ -69,12 +69,18 @@ export const memeRouter = router({
                 username: true,
               },
             },
+            template: {
+              select: {
+                name: true,
+              },
+            },
           },
         })
         .then((memes) =>
           memes.map((meme) => ({
             ...meme,
             user: meme.user.username,
+            template: meme.template?.name,
             link: `http://localhost:5173/meme/${meme.id}`,
           })),
         );
@@ -89,6 +95,7 @@ export const memeRouter = router({
         description: z.string().optional(),
         visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]).default("PUBLIC"),
         usertexts: z.string().optional(),
+        templateId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -104,6 +111,11 @@ export const memeRouter = router({
           description: input.description,
           visibility: input.visibility,
           usertexts: input.usertexts,
+          template: {
+            connect: {
+              id: input.templateId,
+            },
+          },
         },
       });
 

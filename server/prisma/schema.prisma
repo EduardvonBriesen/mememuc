@@ -45,9 +45,9 @@ model Meme {
   description String     @default("")
   visibility  Visibility @default(PUBLIC)
   usertexts   String     @default("")
-  
+  templateId  String?    @db.ObjectId
+  template    Template?  @relation(fields: [templateId], references: [id])
 }
-
 
 model Comment {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -64,6 +64,7 @@ model Template {
   image String
   name  String
   type  String
+  Meme  Meme[]
 }
 
 model User {

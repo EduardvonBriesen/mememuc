@@ -17,6 +17,7 @@ const memes = ref<
     upvotes: number;
     downvotes: number;
     usertexts: string;
+    template: string;
   }[]
 >();
 

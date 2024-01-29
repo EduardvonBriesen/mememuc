@@ -10,7 +10,7 @@ import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
-import { createMeme, getDraft, saveDraft, updateDraft } from "@/utils/api";
+import { client, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
 const can = ref(null);
 
@@ -31,6 +31,7 @@ const memeDescription = ref("");
 const memeVisibility = ref<"PUBLIC" | "UNLISTED" | "PRIVATE">("PUBLIC");
 const saveModalOpen = ref(false);
 const usertexts = ref("");
+const templateId = ref<string | undefined>();
 let textObjects = [];
 
 const router = useRouter();
@@ -102,7 +103,7 @@ function saveText() {
   console.log("Textinhalte: " + usertexts);
 }
 
-async function setTemplate(src: string) {
+async function setTemplate(src: string, template?: string) {
   if (src === "") {
     canvas.clear();
     canvas.setBackgroundColor("white", () => {
@@ -111,6 +112,8 @@ async function setTemplate(src: string) {
     });
     return;
   }
+
+  templateId.value = template;
 
   const img = new Image();
   // It is important to set crossOrigin to anonymous so that the background image is not tainted
@@ -193,16 +196,19 @@ function generateMeme(
     }
 
     //save image to mongoDB database
-    createMeme(
-      dataUrl,
-      memeTitle,
-      description,
-      memeVisibility.value,
-      usertexts,
-    ).then((res) => {
-      console.log(res);
-      openMemeSingleView(res.id);
-    });
+    client.meme.save
+      .mutate({
+        base64: dataUrl,
+        title: memeTitle,
+        description: description,
+        visibility: memeVisibility.value,
+        usertexts: usertexts,
+        templateId: templateId.value,
+      })
+      .then((res) => {
+        console.log(res);
+        openMemeSingleView(res.id);
+      });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
   } else {
     console.error(

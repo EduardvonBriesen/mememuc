@@ -20,6 +20,7 @@ const props = defineProps<{
     upvotes: number;
     downvotes: number;
     usertexts: string;
+    template?: string;
   };
 }>();
 
@@ -63,7 +64,10 @@ function generateSpeech() {
     " Downvotes. " +
     description +
     " This meme contains the following texts: " +
-    props.meme.usertexts;
+    props.meme.usertexts +
+    (props.meme.template
+      ? " and is based on template " + props.meme.template
+      : "");
 
   var synth = window.speechSynthesis;
   console.log("Text: " + text);
