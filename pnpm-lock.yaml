@@ -48,6 +48,9 @@ importers:
       '@trpc/client':
         specifier: ^10.44.1
         version: 10.44.1(@trpc/server@10.44.1)
+      '@vuepic/vue-datepicker':
+        specifier: ^8.0.0
+        version: 8.0.0(vue@3.3.8)
       axios:
         specifier: ^1.6.2
         version: 1.6.2
@@ -1018,6 +1021,16 @@ packages:
   /@vue/shared@3.3.8:
     resolution: {integrity: sha512-8PGwybFwM4x8pcfgqEQFy70NaQxASvOC5DJwLQfpArw1UDfUXrJkdxD3BhVTMS+0Lef/TU7YO0Jvr0jJY8T+mw==}
 
+  /@vuepic/vue-datepicker@8.0.0(vue@3.3.8):
+    resolution: {integrity: sha512-0HsxG2GGTWzeitPVhIEFPHLyLwTU+VT0vk15JreqNi0cB6D5Mpf5vqHppJE0ech+ZTQx36Ip99oSfnQdA0SNrA==}
+    engines: {node: '>=18.12.0'}
+    peerDependencies:
+      vue: '>=3.2.0'
+    dependencies:
+      date-fns: 3.3.1
+      vue: 3.3.8(typescript@5.2.2)
+    dev: false
+
   /abab@2.0.6:
     resolution: {integrity: sha512-j2afSsaIENvHZN2B8GOpF566vZ5WVk5opAiMTvWgaQT8DkbOqsTfvNAvHoRGU2zzP8cPoqys+xHTRDWW8L+/BA==}
     deprecated: Use your platform's native atob() and btoa() methods instead
@@ -1623,6 +1636,10 @@ packages:
       whatwg-url: 11.0.0
     dev: false
     optional: true
+
+  /date-fns@3.3.1:
+    resolution: {integrity: sha512-y8e109LYGgoQDveiEBD3DYXKba1jWf5BA8YU1FL5Tvm0BTdEfy54WLCwnuYWZNnzzvALy/QQ4Hov+Q9RVRv+Zw==}
+    dev: false
 
   /de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
