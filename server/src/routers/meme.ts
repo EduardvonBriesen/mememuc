@@ -101,19 +101,23 @@ export const memeRouter = router({
             lt: input.numericalValue,
           };
         }
-      } else if (input.filterOption && ["title"].includes(input.filterOption)) {
-        filterConditions.title = {
-          contains: input.textFilter, // ist stand jetzt case sensitive
-          mode: "insensitive", // hiermit ist comparison case-insensitive
-        };
-      } else if (
-        input.filterOption &&
-        ["description"].includes(input.filterOption)
-      ) {
-        filterConditions.description = {
-          contains: input.textFilter, // ist stand jetzt case sensitive
-          mode: "insensitive", // hiermit ist comparison case-insensitive
-        };
+      }
+
+      if (input.textFilter && input.textFilter != "") {
+        filterConditions.OR = [
+          {
+            title: {
+              contains: input.textFilter, // ist stand jetzt case sensitive
+              mode: "insensitive", // hiermit ist comparison case-insensitive
+            },
+          },
+          {
+            description: {
+              contains: input.textFilter, // ist stand jetzt case sensitive
+              mode: "insensitive", // hiermit ist comparison case-insensitive
+            },
+          },
+        ];
       }
 
       const memes = await ctx.prisma.meme

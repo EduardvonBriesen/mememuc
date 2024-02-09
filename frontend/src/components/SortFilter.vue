@@ -28,7 +28,7 @@ const applyFilter = () => {
     });
   } else {
     inputFilterChange({
-      textFilter: "",
+      textFilter: textFilter.value,
       comparisonOperator: comparisonOperator.value,
       numericalValue: parseInt(numericalValue.value),
     });
@@ -55,8 +55,6 @@ const updateNumericalFilter = () => {
     <label for="filter">Filter Option:</label>
     <select v-model="filterOption" @change="applyFilter">
       <option value="">None</option>
-      <option value="title">Title</option>
-      <option value="description">Description</option>
       <option value="upvotes">Upvotes</option>
       <option value="downvotes">Downvotes</option>
       <!-- <option value="timestamp">Timestamp</option> -->
@@ -66,8 +64,6 @@ const updateNumericalFilter = () => {
       <label for="comparisonOperator">Operator:</label>
       <select v-model="comparisonOperator" @change="applyFilter">
         <option value="=">Equal to</option>
-        <!-- <option value=">=">Greater than or equal to</option>
-        <option value="<=">Less than or equal to</option> -->
         <option value=">">Greater than</option>
         <option value="<">Less than</option>
       </select>
@@ -80,10 +76,8 @@ const updateNumericalFilter = () => {
       />
     </template>
 
-    <template v-if="['title', 'description'].includes(filterOption)">
-      <label for="textFilter">Filter Value:</label>
-      <input type="text" v-model="textFilter" @input="applyFilter" />
-    </template>
+    <label for="textFilter">Search:</label>
+    <input type="text" v-model="textFilter" @input="applyFilter" />
   </div>
 </template>
 
