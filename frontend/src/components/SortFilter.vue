@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { ref, defineProps } from "vue";
+import DatePicker from "@/components/DatePicker.vue";
+
+const date = ref(new Date());
 
 const { sortChange, filterChange, inputFilterChange } = defineProps([
   "sortChange",
@@ -20,17 +23,28 @@ const applySort = () => {
 const applyFilter = () => {
   filterChange(filterOption.value);
 
-  if (!["upvotes", "downvotes"].includes(filterOption.value)) {
-    inputFilterChange({
-      textFilter: textFilter.value,
-      comparisonOperator: "",
-      numericalValue: 0,
-    });
-  } else {
+  console.log(filterOption.value);
+
+  if (["upvotes", "downvotes"].includes(filterOption.value)) {
     inputFilterChange({
       textFilter: textFilter.value,
       comparisonOperator: comparisonOperator.value,
       numericalValue: parseInt(numericalValue.value),
+      dateValue: "",
+    });
+  } else if (["before", "after"].includes(filterOption.value)) {
+    inputFilterChange({
+      textFilter: textFilter.value,
+      comparisonOperator: "",
+      numericalValue: 0,
+      dateValue: dateToTimestamp(date.value),
+    });
+  } else {
+    inputFilterChange({
+      textFilter: textFilter.value,
+      comparisonOperator: "",
+      numericalValue: 0,
+      dateValue: "",
     });
   }
 };
@@ -39,6 +53,15 @@ const updateNumericalFilter = () => {
   if (["upvotes", "downvotes"].includes(filterOption.value)) {
     applyFilter();
   }
+};
+
+const dateToTimestamp = (date: Date) => {
+  // Convert to ISO string and replace 'Z' with '+00:00'
+  const formattedTimestamp = date.toISOString().replace("Z", "+00:00");
+
+  console.log(formattedTimestamp);
+
+  return formattedTimestamp;
 };
 </script>
 
@@ -57,6 +80,8 @@ const updateNumericalFilter = () => {
       <option value="">None</option>
       <option value="upvotes">Upvotes</option>
       <option value="downvotes">Downvotes</option>
+      <option value="before">Date Before</option>
+      <option value="after">Date After</option>
       <!-- <option value="timestamp">Timestamp</option> -->
     </select>
 
@@ -73,6 +98,14 @@ const updateNumericalFilter = () => {
         type="number"
         v-model="numericalValue"
         @input="updateNumericalFilter"
+      />
+    </template>
+
+    <template v-if="['before', 'after'].includes(filterOption)">
+      <DatePicker
+        v-model="date"
+        :enable-time-picker="false"
+        @input="applyFilter"
       />
     </template>
 

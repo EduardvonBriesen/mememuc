@@ -68,6 +68,7 @@ export function getMemes({
   comparisonOperator?: string;
   numericalValue?: number;
   textFilter?: string;
+  dateValue?: string;
 }) {
   return client.meme.find.query({
     query,

@@ -27,6 +27,7 @@ const filterOption = ref("");
 const textFilter = ref("");
 const comparisonOperator = ref("=");
 const numericalValue = ref(0);
+const dateValue = ref("");
 
 const updateSort = (option: string) => {
   console.log("updateSort");
@@ -54,6 +55,7 @@ const updateFilterInput = (value: any) => {
   textFilter.value = value.textFilter;
   comparisonOperator.value = value.comparisonOperator;
   numericalValue.value = value.numericalValue;
+  dateValue.value = value.dateValue;
   console.log(textFilter.value);
   console.log(comparisonOperator.value);
   console.log(numericalValue.value);
@@ -83,6 +85,7 @@ async function fetchMemes() {
       comparisonOperator: comparisonOperator.value,
       numericalValue: isNaN(numericalValue.value) ? 0 : numericalValue.value,
       textFilter: textFilter.value,
+      dateValue: dateValue.value,
     });
 
     memes.value = data;
