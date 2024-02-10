@@ -36,6 +36,7 @@ export const memeRouter = router({
         textFilter: z.string().optional(),
         comparisonOperator: z.string().optional(),
         numericalValue: z.number().optional(),
+        dateValue: z.string().optional(),
       }),
     )
     .output(z.any())
@@ -99,6 +100,24 @@ export const memeRouter = router({
         ) {
           filterConditions.downvotes = {
             lt: input.numericalValue,
+          };
+        }
+      } else if (
+        input.filterOption &&
+        ["before"].includes(input.filterOption)
+      ) {
+        console.log("Filtering for: ", input.filterOption);
+        console.log("Date: ", input.dateValue);
+        if (input.dateValue) {
+          filterConditions.timestamp = {
+            lt: new Date(input.dateValue),
+          };
+        }
+      } else if (input.filterOption && ["after"].includes(input.filterOption)) {
+        console.log("Filtering for: ", input.filterOption);
+        if (input.dateValue) {
+          filterConditions.timestamp = {
+            gt: new Date(input.dateValue),
           };
         }
       }

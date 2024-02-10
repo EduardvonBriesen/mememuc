@@ -58,6 +58,7 @@ export function getMemes({
   comparisonOperator,
   numericalValue,
   textFilter,
+  dateValue,
 }: {
   query?: string;
   page?: number;
@@ -80,6 +81,7 @@ export function getMemes({
     comparisonOperator,
     numericalValue,
     textFilter,
+    dateValue,
   });
 }
 

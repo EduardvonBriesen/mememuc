@@ -56,8 +56,11 @@ const updateNumericalFilter = () => {
 };
 
 const dateToTimestamp = (date: Date) => {
-  // Convert to ISO string and replace 'Z' with '+00:00'
-  const formattedTimestamp = date.toISOString().replace("Z", "+00:00");
+  // Set hours, minutes, seconds, and milliseconds to 0
+  date.setUTCHours(0, 0, 0, 0);
+
+  // Convert to ISO string
+  const formattedTimestamp = date.toISOString();
 
   console.log(formattedTimestamp);
 
@@ -68,7 +71,11 @@ const dateToTimestamp = (date: Date) => {
 <template>
   <div class="sort-filter">
     <label for="sort">Sort By:</label>
-    <select v-model="sortOption" @change="applySort">
+    <select
+      v-model="sortOption"
+      @change="applySort"
+      class="select select-primary border-primary"
+    >
       <option value="new">Newest</option>
       <option value="old">Oldest</option>
       <option value="top">Top Rated</option>
@@ -76,7 +83,11 @@ const dateToTimestamp = (date: Date) => {
     </select>
 
     <label for="filter">Filter Option:</label>
-    <select v-model="filterOption" @change="applyFilter">
+    <select
+      v-model="filterOption"
+      @change="applyFilter"
+      class="select select-primary border-primary"
+    >
       <option value="">None</option>
       <option value="upvotes">Upvotes</option>
       <option value="downvotes">Downvotes</option>
@@ -87,7 +98,11 @@ const dateToTimestamp = (date: Date) => {
 
     <template v-if="['upvotes', 'downvotes'].includes(filterOption)">
       <label for="comparisonOperator">Operator:</label>
-      <select v-model="comparisonOperator" @change="applyFilter">
+      <select
+        v-model="comparisonOperator"
+        @change="applyFilter"
+        class="select select-primary border-primary"
+      >
         <option value="=">Equal to</option>
         <option value=">">Greater than</option>
         <option value="<">Less than</option>
@@ -98,6 +113,7 @@ const dateToTimestamp = (date: Date) => {
         type="number"
         v-model="numericalValue"
         @input="updateNumericalFilter"
+        class="input input-bordered border-primary"
       />
     </template>
 
@@ -106,11 +122,18 @@ const dateToTimestamp = (date: Date) => {
         v-model="date"
         :enable-time-picker="false"
         @input="applyFilter"
+        dark
+        input-class-name="input input-bordered border-primary"
       />
     </template>
 
     <label for="textFilter">Search:</label>
-    <input type="text" v-model="textFilter" @input="applyFilter" />
+    <input
+      type="text"
+      v-model="textFilter"
+      @input="applyFilter"
+      class="input input-bordered border-primary"
+    />
   </div>
 </template>
 
@@ -119,10 +142,5 @@ const dateToTimestamp = (date: Date) => {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-select,
-input {
-  color: #000;
 }
 </style>
