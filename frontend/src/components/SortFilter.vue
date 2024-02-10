@@ -70,77 +70,109 @@ const dateToTimestamp = (date: Date) => {
 
 <template>
   <div class="sort-filter">
-    <label for="sort">Sort By:</label>
-    <select
-      v-model="sortOption"
-      @change="applySort"
-      class="select select-primary border-primary"
-    >
-      <option value="new">Newest</option>
-      <option value="old">Oldest</option>
-      <option value="top">Top Rated</option>
-      <option value="hot">Worst Rated</option>
-    </select>
-
-    <label for="filter">Filter Option:</label>
-    <select
-      v-model="filterOption"
-      @change="applyFilter"
-      class="select select-primary border-primary"
-    >
-      <option value="">None</option>
-      <option value="upvotes">Upvotes</option>
-      <option value="downvotes">Downvotes</option>
-      <option value="before">Date Before</option>
-      <option value="after">Date After</option>
-      <!-- <option value="timestamp">Timestamp</option> -->
-    </select>
-
-    <template v-if="['upvotes', 'downvotes'].includes(filterOption)">
-      <label for="comparisonOperator">Operator:</label>
+    <div class="filter-row">
+      <label for="sort">Sort By:</label>
       <select
-        v-model="comparisonOperator"
+        v-model="sortOption"
+        @change="applySort"
+        class="select select-primary border-primary"
+      >
+        <option value="new">Newest</option>
+        <option value="old">Oldest</option>
+        <option value="top">Top Rated</option>
+        <option value="hot">Worst Rated</option>
+      </select>
+    </div>
+
+    <div class="filter-row">
+      <label for="filter">Filter Option:</label>
+      <select
+        v-model="filterOption"
         @change="applyFilter"
         class="select select-primary border-primary"
       >
-        <option value="=">Equal to</option>
-        <option value=">">Greater than</option>
-        <option value="<">Less than</option>
+        <option value="">None</option>
+        <option value="upvotes">Upvotes</option>
+        <option value="downvotes">Downvotes</option>
+        <option value="before">Date Before</option>
+        <option value="after">Date After</option>
+        <!-- <option value="timestamp">Timestamp</option> -->
       </select>
+    </div>
 
-      <label for="numericalValue">Value:</label>
+    <template v-if="['upvotes', 'downvotes'].includes(filterOption)">
+      <div class="filter-row">
+        <label for="comparisonOperator">Operator:</label>
+        <select
+          v-model="comparisonOperator"
+          @change="applyFilter"
+          class="select select-primary border-primary"
+        >
+          <option value="=">Equal to</option>
+          <option value=">">Greater than</option>
+          <option value="<">Less than</option>
+        </select>
+      </div>
+    </template>
+
+    <template
+      v-if="['upvotes', 'downvotes'].includes(filterOption)"
+      class="filter-row"
+    >
+      <div class="filter-row">
+        <label for="numericalValue">Value:</label>
+        <input
+          type="number"
+          v-model="numericalValue"
+          @input="updateNumericalFilter"
+          class="input input-bordered border-primary"
+        />
+      </div>
+    </template>
+
+    <template
+      v-if="['before', 'after'].includes(filterOption)"
+      class="filter-row"
+    >
+      <div class="filter-row">
+        <label>Date:</label>
+        <DatePicker
+          v-model="date"
+          :enable-time-picker="false"
+          @input="applyFilter"
+          dark
+          input-class-name="input input-bordered border-primary"
+        />
+      </div>
+    </template>
+
+    <div class="filter-row">
+      <label for="textFilter">Search:</label>
       <input
-        type="number"
-        v-model="numericalValue"
-        @input="updateNumericalFilter"
+        type="text"
+        v-model="textFilter"
+        @input="applyFilter"
         class="input input-bordered border-primary"
       />
-    </template>
-
-    <template v-if="['before', 'after'].includes(filterOption)">
-      <DatePicker
-        v-model="date"
-        :enable-time-picker="false"
-        @input="applyFilter"
-        dark
-        input-class-name="input input-bordered border-primary"
-      />
-    </template>
-
-    <label for="textFilter">Search:</label>
-    <input
-      type="text"
-      v-model="textFilter"
-      @input="applyFilter"
-      class="input input-bordered border-primary"
-    />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .sort-filter {
   display: flex;
-  align-items: center;
+  flex-direction: row;
   gap: 10px;
+  align-items: center;
+}
+
+.filter-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.filter-row label {
+  margin-bottom: 5px;
 }
 </style>
