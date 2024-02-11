@@ -195,20 +195,25 @@ function generateMeme(
       return;
     }
 
+    const meme = {
+      base64: dataUrl,
+      title: memeTitle,
+      description: description,
+      visibility: memeVisibility.value,
+      usertexts: usertexts,
+      templateId: templateId.value,
+    };
+
+    // append meme to local storage
+    const memes = JSON.parse(localStorage.getItem("memes") || "[]");
+    memes.push(meme);
+    localStorage.setItem("memes", JSON.stringify(memes));
+
     //save image to mongoDB database
-    client.meme.save
-      .mutate({
-        base64: dataUrl,
-        title: memeTitle,
-        description: description,
-        visibility: memeVisibility.value,
-        usertexts: usertexts,
-        templateId: templateId.value,
-      })
-      .then((res) => {
-        console.log(res);
-        openMemeSingleView(res.id);
-      });
+    client.meme.save.mutate(meme).then((res) => {
+      console.log(res);
+      openMemeSingleView(res.id);
+    });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
   } else {
     console.error(
