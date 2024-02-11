@@ -218,4 +218,32 @@ export const userRouter = router({
 
       return;
     }),
+  getMemes: privatProcedure.query(async ({ ctx }) => {
+    const memes = await ctx.prisma.meme.findMany({
+      where: {
+        userId: ctx.userId,
+      },
+    });
+
+    return memes;
+  }),
+  updateMemeVisibility: privatProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.prisma.meme.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          visibility: input.visibility,
+        },
+      });
+
+      return;
+    }),
 });

@@ -7,6 +7,9 @@ export const memeRouter = router({
     const meme = await ctx.prisma.meme.findUnique({
       where: {
         id: input,
+        visibility: {
+          in: ["PUBLIC", "UNLISTED"],
+        },
       },
     });
 
@@ -15,6 +18,9 @@ export const memeRouter = router({
 
   all: publicProcedure.query(async ({ ctx }) => {
     const memes = await ctx.prisma.meme.findMany({
+      where: {
+        visibility: "PUBLIC",
+      },
       select: {
         id: true,
       },
@@ -149,7 +155,10 @@ export const memeRouter = router({
           ],
           skip: (input.page - 1) * input.limit,
           take: input.limit,
-          where: filterConditions,
+          where: {
+            ...filterConditions,
+            visibility: "PUBLIC",
+          },
           select: {
             id: true,
             title: true,
@@ -157,10 +166,16 @@ export const memeRouter = router({
             downvotes: true,
             timestamp: true,
             description: true,
+            usertexts: true,
             base64: input.image,
             user: {
               select: {
                 username: true,
+              },
+            },
+            template: {
+              select: {
+                name: true,
               },
             },
           },
@@ -169,6 +184,7 @@ export const memeRouter = router({
           memes.map((meme) => ({
             ...meme,
             user: meme.user.username,
+            template: meme.template?.name,
             link: `http://localhost:5173/meme/${meme.id}`,
           })),
         );
@@ -182,6 +198,9 @@ export const memeRouter = router({
         base64: z.string(),
         title: z.string(), // Add title property here
         description: z.string().optional(),
+        visibility: z.enum(["PUBLIC", "UNLISTED", "PRIVATE"]).default("PUBLIC"),
+        usertexts: z.string().optional(),
+        templateId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -195,6 +214,13 @@ export const memeRouter = router({
           base64: input.base64,
           title: input.title, // Set title here
           description: input.description,
+          visibility: input.visibility,
+          usertexts: input.usertexts,
+          template: {
+            connect: {
+              id: input.templateId,
+            },
+          },
         },
       });
 

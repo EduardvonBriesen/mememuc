@@ -19,6 +19,8 @@ const props = defineProps<{
     timestamp: string;
     upvotes: number;
     downvotes: number;
+    usertexts: string;
+    template?: string;
   };
 }>();
 
@@ -46,10 +48,12 @@ function generateSpeech() {
   const description =
     props.meme.description === undefined
       ? "There is no description for this meme."
-      : "The description is: " + props.meme.description;
+      : "The description is: " + props.meme.description + ".";
 
   const text =
-    "This meme was uploaded on " +
+    "The meme " +
+    props.meme.title +
+    " was uploaded on " +
     new Date(props.meme.timestamp).toLocaleDateString() +
     " from user " +
     props.meme.user +
@@ -58,9 +62,15 @@ function generateSpeech() {
     " Upvotes and " +
     props.meme.downvotes +
     " Downvotes. " +
-    description;
+    description +
+    " This meme contains the following texts: " +
+    props.meme.usertexts +
+    (props.meme.template
+      ? " and is based on template " + props.meme.template
+      : "");
 
   var synth = window.speechSynthesis;
+  console.log("Text: " + text);
   var utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-US";
   synth.speak(utterance);

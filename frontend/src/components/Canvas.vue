@@ -10,7 +10,7 @@ import TextControl from "@/components/TextControl.vue";
 //import TemplateSelection from "@/components/TemplateSelection.vue";
 import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
-import { createMeme, getDraft, saveDraft, updateDraft } from "@/utils/api";
+import { client, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
 const can = ref(null);
 
@@ -25,10 +25,14 @@ let lastPosY = 0;
 
 const activeObject: Ref<fabric.IText | fabric.BaseBrush | null> = ref(null);
 const drawingMode = ref(false);
-const targetFileSizeKB = ref(1000); // Default value
-const memeTitle = ref(""); // Default value
-const memeDescription = ref(""); // Default value
+const targetFileSizeKB = ref(1000);
+const memeTitle = ref("");
+const memeDescription = ref("");
+const memeVisibility = ref<"PUBLIC" | "UNLISTED" | "PRIVATE">("PUBLIC");
 const saveModalOpen = ref(false);
+const usertexts = ref("");
+const templateId = ref<string | undefined>();
+let textObjects = [];
 
 const router = useRouter();
 
@@ -75,19 +79,31 @@ function applyLockStateToObjects() {
 }
 
 function addText() {
-  const text = new fabric.IText("hello world", {
+  const text = new fabric.IText("Funny text goes here...", {
     left: ((activeObject.value as fabric.IText)?.left ?? 0) + 10,
     top: ((activeObject.value as fabric.IText)?.top ?? 0) + 10,
   });
   canvas.add(text);
   canvas.setActiveObject(text);
+  textObjects.push(text);
 
   // Possiblility to lock text with the resize lock
   // text.selectable = !resizeLocked.value;
   // text.evented = !resizeLocked.value;
 }
 
-async function setTemplate(src: string) {
+function saveText() {
+  const validTextObjects = canvas
+    .getObjects()
+    .filter((obj) => obj instanceof fabric.IText && textObjects.includes(obj));
+  usertexts.value = validTextObjects
+    .map((textObj: fabric.IText) => textObj.text)
+    .join(". ");
+
+  console.log("Textinhalte: " + usertexts);
+}
+
+async function setTemplate(src: string, template?: string) {
   if (src === "") {
     canvas.clear();
     canvas.setBackgroundColor("white", () => {
@@ -96,6 +112,8 @@ async function setTemplate(src: string) {
     });
     return;
   }
+
+  templateId.value = template;
 
   const img = new Image();
   // It is important to set crossOrigin to anonymous so that the background image is not tainted
@@ -145,6 +163,7 @@ function generateMeme(
   targetFileSizeKB: number,
   memeTitle: string,
   description: string,
+  usertexts: string,
 ) {
   // Check if there is a background image and it is not tainted
   if (
@@ -177,10 +196,19 @@ function generateMeme(
     }
 
     //save image to mongoDB database
-    createMeme(dataUrl, memeTitle, description).then((res) => {
-      console.log(res);
-      openMemeSingleView(res.id);
-    });
+    client.meme.save
+      .mutate({
+        base64: dataUrl,
+        title: memeTitle,
+        description: description,
+        visibility: memeVisibility.value,
+        usertexts: usertexts,
+        templateId: templateId.value,
+      })
+      .then((res) => {
+        console.log(res);
+        openMemeSingleView(res.id);
+      });
     console.log("Meme generated with filesize:", dataUrl.length / 1024);
   } else {
     console.error(
@@ -190,8 +218,14 @@ function generateMeme(
 }
 
 function generateMemeWithPrompt() {
+  saveText();
   // Call the generateMeme function with the target file size
-  generateMeme(targetFileSizeKB.value, memeTitle.value, memeDescription.value);
+  generateMeme(
+    targetFileSizeKB.value,
+    memeTitle.value,
+    memeDescription.value,
+    usertexts.value,
+  );
   console.log("Target File Size:", targetFileSizeKB.value);
 }
 
@@ -349,6 +383,16 @@ function toggleResizeLock() {
             step="50"
             v-model="targetFileSizeKB"
           />
+          <label for="visibility" class="label label-text"> Visibility </label>
+          <select
+            class="select select-bordered"
+            id="visibility"
+            v-model="memeVisibility"
+          >
+            <option value="PUBLIC">Public</option>
+            <option value="UNLISTED">Unlisted</option>
+            <option value="PRIVATE">Private</option>
+          </select>
 
           <button class="btn btn-primary mt-4 w-32" type="submit">
             Generate Meme
