@@ -166,60 +166,60 @@ function generateMeme(
   usertexts: string,
 ) {
   // Check if there is a background image and it is not tainted
-  if (
-    canvas.backgroundImage &&
-    !(canvas.backgroundImage as fabric.Image).crossOrigin
-  ) {
-    let quality = 1; // Initial quality setting
+  // if (
+  //   canvas.backgroundImage &&
+  //   !(canvas.backgroundImage as fabric.Image).crossOrigin
+  // ) {
+  let quality = 1; // Initial quality setting
 
-    // Generate the image data URL and check its file size
-    let dataUrl;
-    do {
-      dataUrl = canvas.toDataURL({ format: "png", quality });
-      const fileSizeKB = dataUrl.length / 1024;
+  // Generate the image data URL and check its file size
+  let dataUrl;
+  do {
+    dataUrl = canvas.toDataURL({ format: "png", quality });
+    const fileSizeKB = dataUrl.length / 1024;
 
-      // If the file size exceeds the target, reduce the quality and try again
-      if (fileSizeKB > targetFileSizeKB) {
-        quality -= 0.01; // You can adjust the step size as needed
-      }
-    } while (quality > 0 && dataUrl.length / 1024 > targetFileSizeKB);
-
-    if (dataUrl.length / 1024 > targetFileSizeKB) {
-      window.alert(
-        "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB)",
-      );
-      // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000;
-
-      // Call the generateMeme function with the target file size
-      // generateMeme(targetFileSizeKB);
-      return;
+    // If the file size exceeds the target, reduce the quality and try again
+    if (fileSizeKB > targetFileSizeKB) {
+      quality -= 0.01; // You can adjust the step size as needed
     }
+  } while (quality > 0 && dataUrl.length / 1024 > targetFileSizeKB);
 
-    const meme = {
-      base64: dataUrl,
-      title: memeTitle,
-      description: description,
-      visibility: memeVisibility.value,
-      usertexts: usertexts,
-      templateId: templateId.value,
-    };
-
-    // append meme to local storage
-    const memes = JSON.parse(localStorage.getItem("memes") || "[]");
-    memes.push(meme);
-    localStorage.setItem("memes", JSON.stringify(memes));
-
-    //save image to mongoDB database
-    client.meme.save.mutate(meme).then((res) => {
-      console.log(res);
-      openMemeSingleView(res.id);
-    });
-    console.log("Meme generated with filesize:", dataUrl.length / 1024);
-  } else {
-    console.error(
-      "Background image is tainted. Ensure that it is hosted on the same domain or has proper CORS headers.",
+  if (dataUrl.length / 1024 > targetFileSizeKB) {
+    window.alert(
+      "Failed to generate meme, specified filesize too small. Enter a larger desired maximum file size in kilobytes (KB)",
     );
+    // const targetFileSizeKB = userInput ? parseFloat(userInput) : 1000;
+
+    // Call the generateMeme function with the target file size
+    // generateMeme(targetFileSizeKB);
+    return;
   }
+
+  const meme = {
+    base64: dataUrl,
+    title: memeTitle,
+    description: description,
+    visibility: memeVisibility.value,
+    usertexts: usertexts,
+    templateId: templateId.value ?? "",
+  };
+
+  // append meme to local storage
+  const memes = JSON.parse(localStorage.getItem("memes") || "[]");
+  memes.push(meme);
+  localStorage.setItem("memes", JSON.stringify(memes));
+
+  //save image to mongoDB database
+  client.meme.save.mutate(meme).then((res) => {
+    console.log(res);
+    openMemeSingleView(res.id);
+  });
+  console.log("Meme generated with filesize:", dataUrl.length / 1024);
+  //   } else {
+  //     console.error(
+  //       "Background image is tainted. Ensure that it is hosted on the same domain or has proper CORS headers.",
+  //     );
+  //   }
 }
 
 function generateMemeWithPrompt() {

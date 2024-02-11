@@ -216,11 +216,13 @@ export const memeRouter = router({
           description: input.description,
           visibility: input.visibility,
           usertexts: input.usertexts,
-          template: {
-            connect: {
-              id: input.templateId,
-            },
-          },
+          template: input.templateId
+            ? {
+                connect: {
+                  id: input.templateId,
+                },
+              }
+            : undefined,
         },
       });
 
