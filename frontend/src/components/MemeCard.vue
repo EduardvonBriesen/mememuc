@@ -78,18 +78,7 @@ function generateSpeech() {
 </script>
 
 <template>
-  <div class="card bg-base-100 shadow-xl">
-    <!-- Speech Icon trigger-->
-    <div class="m-3 flex justify-end">
-      <button
-        class="btn btn-outline btn-info w-25 rounded-full"
-        @click="generateSpeech"
-      >
-        Describe it
-        <SpeechIcon class="h-4 w-4" />
-      </button>
-    </div>
-
+  <div class="card bg-base-300 shadow-xl">
     <figure
       @click="$router.push(`/meme/${props.meme.id}`)"
       class="cursor-pointer"
@@ -97,19 +86,8 @@ function generateSpeech() {
       <img :src="props.meme.base64" />
     </figure>
     <div class="card-body">
-      <div class="card-actions justify-evenly">
-        <button
-          v-if="store.user"
-          class="btn btn-circle btn-error"
-          :class="{
-            'btn-outline':
-              userVotes[props.meme.id] === undefined ||
-              userVotes[props.meme.id],
-          }"
-          @click="() => updateVote(props.meme.id, false)"
-        >
-          <DownIcon class="h-6 w-6" />
-        </button>
+      <h2 class="card-title justify-between">
+        <span>{{ props.meme.title }}</span>
         <span
           class="badge badge-outline"
           :class="{
@@ -144,6 +122,34 @@ function generateSpeech() {
                 : -1)
           }}
         </span>
+      </h2>
+      <p>
+        {{ props.meme.description }}
+      </p>
+
+      <div class="card-actions justify-evenly">
+        <button
+          v-if="store.user"
+          class="btn btn-circle btn-error"
+          :class="{
+            'btn-outline':
+              userVotes[props.meme.id] === undefined ||
+              userVotes[props.meme.id],
+          }"
+          @click="() => updateVote(props.meme.id, false)"
+        >
+          <DownIcon class="h-6 w-6" />
+        </button>
+        <!-- Speech Icon trigger-->
+
+        <button
+          class="btn btn-outline btn-info w-25 rounded-full"
+          @click="generateSpeech"
+        >
+          Describe it
+          <SpeechIcon class="h-4 w-4" />
+        </button>
+
         <button
           v-if="store.user"
           class="btn btn-circle btn-success"
