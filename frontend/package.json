@@ -12,6 +12,7 @@
   "dependencies": {
     "@heroicons/vue": "^2.0.18",
     "@trpc/client": "^10.44.1",
+    "@vuepic/vue-datepicker": "^8.1.0",
     "axios": "^1.6.2",
     "fabric": "^5.3.0",
     "vue": "^3.3.4",

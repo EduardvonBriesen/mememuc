@@ -15,6 +15,7 @@ export const memeRouter = router({
 
     return meme;
   }),
+
   all: publicProcedure.query(async ({ ctx }) => {
     const memes = await ctx.prisma.meme.findMany({
       where: {
@@ -27,32 +28,135 @@ export const memeRouter = router({
 
     return memes;
   }),
+
   find: publicProcedure
     .meta({ openapi: { method: "GET", path: "/memes" } })
     .input(
       z.object({
         query: z.string().optional(),
-        sort: z.enum(["new", "top", "hot"]).optional(),
+        sort: z.enum(["new", "old", "top", "hot"]).optional(),
         page: z.number().int().positive().default(1),
         limit: z.number().int().positive().default(10),
         image: z.boolean().default(false),
+        filterOption: z.string().optional(),
+        textFilter: z.string().optional(),
+        comparisonOperator: z.string().optional(),
+        numericalValue: z.number().optional(),
+        dateValue: z.string().optional(),
       }),
     )
     .output(z.any())
     .query(async ({ ctx, input }) => {
+      const filterConditions: any = {};
+
+      if (input.query) {
+        filterConditions.title = {
+          contains: input.query,
+        };
+      }
+
+      console.log(input);
+
+      if (input.filterOption && ["upvotes"].includes(input.filterOption)) {
+        console.log("Filtering for: ", input.filterOption);
+        if (
+          input.comparisonOperator &&
+          ["="].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            equals: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          [">"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            gt: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          ["<"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.upvotes = {
+            lt: input.numericalValue,
+          };
+        }
+      } else if (
+        input.filterOption &&
+        ["downvotes"].includes(input.filterOption)
+      ) {
+        console.log("Filtering for: ", input.filterOption);
+        if (
+          input.comparisonOperator &&
+          ["="].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            equals: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          [">"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            gt: input.numericalValue,
+          };
+        } else if (
+          input.comparisonOperator &&
+          ["<"].includes(input.comparisonOperator)
+        ) {
+          filterConditions.downvotes = {
+            lt: input.numericalValue,
+          };
+        }
+      } else if (
+        input.filterOption &&
+        ["before"].includes(input.filterOption)
+      ) {
+        console.log("Filtering for: ", input.filterOption);
+        console.log("Date: ", input.dateValue);
+        if (input.dateValue) {
+          filterConditions.timestamp = {
+            lt: new Date(input.dateValue),
+          };
+        }
+      } else if (input.filterOption && ["after"].includes(input.filterOption)) {
+        console.log("Filtering for: ", input.filterOption);
+        if (input.dateValue) {
+          filterConditions.timestamp = {
+            gt: new Date(input.dateValue),
+          };
+        }
+      }
+
+      if (input.textFilter && input.textFilter != "") {
+        filterConditions.OR = [
+          {
+            title: {
+              contains: input.textFilter, // ist stand jetzt case sensitive
+              mode: "insensitive", // hiermit ist comparison case-insensitive
+            },
+          },
+          {
+            description: {
+              contains: input.textFilter, // ist stand jetzt case sensitive
+              mode: "insensitive", // hiermit ist comparison case-insensitive
+            },
+          },
+        ];
+      }
+
       const memes = await ctx.prisma.meme
         .findMany({
           orderBy: [
             { timestamp: input.sort === "new" ? "desc" : undefined },
-            { upvotes: input.sort === "top" ? "desc" : undefined },
-            { downvotes: input.sort === "hot" ? "desc" : undefined },
+            { timestamp: input.sort === "old" ? "asc" : undefined },
+            { upvotes: input.sort === "top" ? "desc" : undefined }, // welches Verhalten ist denn hier erwünscht?
+            { downvotes: input.sort === "hot" ? "desc" : undefined }, // angezeigt wird Summe, abgefragt wird einzelner Wert -> verwirrend
           ],
           skip: (input.page - 1) * input.limit,
           take: input.limit,
           where: {
-            title: {
-              contains: input.query,
-            },
+            ...filterConditions,
             visibility: "PUBLIC",
           },
           select: {
@@ -87,6 +191,7 @@ export const memeRouter = router({
 
       return memes;
     }),
+
   save: privatProcedure
     .input(
       z.object({
@@ -111,16 +216,19 @@ export const memeRouter = router({
           description: input.description,
           visibility: input.visibility,
           usertexts: input.usertexts,
-          template: {
-            connect: {
-              id: input.templateId,
-            },
-          },
+          template: input.templateId
+            ? {
+                connect: {
+                  id: input.templateId,
+                },
+              }
+            : undefined,
         },
       });
 
       return meme;
     }),
+
   create: publicProcedure
     .meta({ openapi: { method: "POST", path: "/create" } })
     .input(
@@ -179,6 +287,7 @@ export const memeRouter = router({
 
       return memes;
     }),
+
   vote: privatProcedure
     .input(
       z.object({

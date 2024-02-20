@@ -178,6 +178,8 @@ function stopAutoplay() {
             <img id="memeImage" alt="Meme Image" :src="meme?.base64" />
           </div>
         </div>
+        <h2 class="text-2xl font-bold">{{ meme?.title }}</h2>
+        <p>{{ meme?.description }}</p>
         <div class="flex justify-center gap-4">
           <button class="btn btn-primary w-48" @click="downloadMeme">
             Download
