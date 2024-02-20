@@ -287,7 +287,12 @@ async function generateMemeOnline() {
     const result = await client.meme.create.mutate(input);
 
     console.log("Memes created online:", result);
-    openMemeSingleView(result.id);
+
+    const url = new URL(result[0]);
+    const id = url.pathname.split("/").pop();
+
+    // Call openMemeSingleView with the extracted ID
+    openMemeSingleView(id ?? "");
   } catch (error) {
     console.error("Error creating memes online:", error);
   }
