@@ -12,6 +12,8 @@ import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 import { client, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
+const onlineGeneration = ref(true);
+
 const can = ref(null);
 
 const resizeLocked = ref(true); // Initially locked
@@ -217,16 +219,40 @@ function generateMeme(
   }
 }
 
-function generateMemeWithPrompt() {
+// function generateMemeWithPrompt() {
+//   saveText();
+//   // Call the generateMeme function with the target file size
+//   generateMeme(
+//     targetFileSizeKB.value,
+//     memeTitle.value,
+//     memeDescription.value,
+//     usertexts.value,
+//   );
+//   console.log("Target File Size:", targetFileSizeKB.value);
+// }
+
+async function generateMemeWithPrompt() {
   saveText();
-  // Call the generateMeme function with the target file size
-  generateMeme(
-    targetFileSizeKB.value,
-    memeTitle.value,
-    memeDescription.value,
-    usertexts.value,
-  );
+
+  if (onlineGeneration.value) {
+    // Online generation
+    await generateMemeOnline();
+  } else {
+    // Offline generation
+    generateMeme(
+      targetFileSizeKB.value,
+      memeTitle.value,
+      memeDescription.value,
+      usertexts.value,
+    );
+    console.log("Offline generation selected.");
+  }
+
   console.log("Target File Size:", targetFileSizeKB.value);
+}
+
+async function generateMemeOnline() {
+  client.meme.create.mutate();
 }
 
 function openMemeSingleView(memeId: string) {
@@ -397,6 +423,20 @@ function toggleResizeLock() {
           <button class="btn btn-primary mt-4 w-32" type="submit">
             Generate Meme
           </button>
+
+          <div class="form-control w-52">
+            <label class="label cursor-pointer">
+              <span class="label-text"
+                >Generation Mode:
+                {{ onlineGeneration ? "Online" : "Offline" }}</span
+              >
+              <input
+                type="checkbox"
+                class="toggle toggle-secondary"
+                v-model="onlineGeneration"
+              />
+            </label>
+          </div>
         </form>
         <div class="modal-backdrop" @click="saveModalOpen = false" />
       </div>
