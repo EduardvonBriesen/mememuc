@@ -35,6 +35,7 @@ const saveModalOpen = ref(false);
 const usertexts = ref("");
 const templateId = ref<string | undefined>();
 let textObjects = [];
+let templateSrc = "";
 
 const router = useRouter();
 
@@ -154,6 +155,8 @@ async function setTemplate(src: string, template?: string) {
   };
 
   img.src = src;
+  templateSrc = src;
+  console.log("Template set:", src);
 }
 
 function setDrawingMode(value: boolean) {
@@ -257,7 +260,37 @@ async function generateMemeWithPrompt() {
 }
 
 async function generateMemeOnline() {
-  client.meme.create.mutate();
+  saveText(); // Ensure text is saved if needed
+
+  const template = templateSrc;
+  console.log("Template:", template);
+  const memes = [
+    {
+      title: memeTitle.value,
+      texts: textObjects.map((textObj) => ({
+        text: textObj.text,
+        x: textObj.left,
+        y: textObj.top,
+        size: textObj.fontSize,
+        color: textObj.fill,
+      })),
+    },
+  ];
+  const input = {
+    template,
+    memes,
+  };
+
+  console.log("Memes input:", input);
+
+  try {
+    const result = await client.meme.create.mutate(input);
+
+    console.log("Memes created online:", result);
+    openMemeSingleView(result.id);
+  } catch (error) {
+    console.error("Error creating memes online:", error);
+  }
 }
 
 function openMemeSingleView(memeId: string) {
