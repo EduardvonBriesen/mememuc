@@ -12,6 +12,8 @@ import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 import { client, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
+const onlineGeneration = ref(true);
+
 const can = ref(null);
 
 const resizeLocked = ref(true); // Initially locked
@@ -33,6 +35,7 @@ const saveModalOpen = ref(false);
 const usertexts = ref("");
 const templateId = ref<string | undefined>();
 let textObjects = [];
+let templateSrc = "";
 
 const router = useRouter();
 
@@ -152,6 +155,8 @@ async function setTemplate(src: string, template?: string) {
   };
 
   img.src = src;
+  templateSrc = src;
+  console.log("Template set:", src);
 }
 
 function setDrawingMode(value: boolean) {
@@ -222,16 +227,75 @@ function generateMeme(
   //   }
 }
 
-function generateMemeWithPrompt() {
+// function generateMemeWithPrompt() {
+//   saveText();
+//   // Call the generateMeme function with the target file size
+//   generateMeme(
+//     targetFileSizeKB.value,
+//     memeTitle.value,
+//     memeDescription.value,
+//     usertexts.value,
+//   );
+//   console.log("Target File Size:", targetFileSizeKB.value);
+// }
+
+async function generateMemeWithPrompt() {
   saveText();
-  // Call the generateMeme function with the target file size
-  generateMeme(
-    targetFileSizeKB.value,
-    memeTitle.value,
-    memeDescription.value,
-    usertexts.value,
-  );
+
+  if (onlineGeneration.value) {
+    // Online generation
+    await generateMemeOnline();
+  } else {
+    // Offline generation
+    generateMeme(
+      targetFileSizeKB.value,
+      memeTitle.value,
+      memeDescription.value,
+      usertexts.value,
+    );
+    console.log("Offline generation selected.");
+  }
+
   console.log("Target File Size:", targetFileSizeKB.value);
+}
+
+async function generateMemeOnline() {
+  saveText(); // Ensure text is saved if needed
+
+  const template = templateSrc;
+  console.log("Template:", template);
+  const memes = [
+    {
+      title: memeTitle.value,
+      texts: textObjects.map((textObj) => ({
+        text: textObj.text,
+        x: textObj.left,
+        y: textObj.top,
+        size: textObj.fontSize,
+        color: textObj.fill,
+      })),
+    },
+  ];
+  const input = {
+    template,
+    memes,
+  };
+
+  console.log("Memes input:", input);
+
+  try {
+    const result = await client.meme.create.mutate(input);
+
+    console.log("Memes created online:", result);
+
+    const url = new URL(result[0]);
+    const id = url.pathname.split("/").pop();
+
+    // Call openMemeSingleView with the extracted ID
+    openMemeSingleView(id ?? "");
+  } catch (error) {
+    console.error("Error creating memes online:", error);
+  }
 }
 
 function openMemeSingleView(memeId: string) {
@@ -402,6 +466,20 @@ function toggleResizeLock() {
           <button class="btn btn-primary mt-4 w-32" type="submit">
             Generate Meme
           </button>
+
+          <div class="form-control w-52">
+            <label class="label cursor-pointer">
+              <span class="label-text"
+                >Generation Mode:
+                {{ onlineGeneration ? "Online" : "Offline" }}</span
+              >
+              <input
+                type="checkbox"
+                class="toggle toggle-secondary"
+                v-model="onlineGeneration"
+              />
+            </label>
+          </div>
         </form>
         <div class="modal-backdrop" @click="saveModalOpen = false" />
       </div>
