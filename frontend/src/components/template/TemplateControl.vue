@@ -58,7 +58,6 @@ onMounted(async () => {
 });
 
 function goToPrevious() {
-  emit("clearCanvas");
   index.value--;
   if (index.value < 0) {
     index.value = templates.value.length - 1;
@@ -74,7 +73,6 @@ function goToPrevious() {
 }
 
 async function goToNext() {
-  emit("clearCanvas");
   index.value++;
   if (index.value >= templates.value.length) {
     index.value = 0;
