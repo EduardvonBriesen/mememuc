@@ -12,7 +12,7 @@ import BrushControl from "./BrushControl.vue";
 import TemplateControl from "@/components/template/TemplateControl.vue";
 import { client, getDraft, saveDraft, updateDraft } from "@/utils/api";
 
-const onlineGeneration = ref(true);
+const onlineGeneration = ref(false);
 
 const can = ref(null);
 
@@ -137,16 +137,14 @@ async function setTemplate(src: string, template?: string) {
     fabricImg.selectable = !resizeLocked.value;
     fabricImg.evented = !resizeLocked.value;
 
-    canvas.add(fabricImg);
-
     if (resizeLocked.value) {
       canvas.setWidth(width * scale);
       canvas.setHeight(height * scale);
-      canvas.add(fabricImg);
       canvas.setBackgroundImage(fabricImg, canvas.renderAll.bind(canvas));
       return;
     }
 
+    canvas.add(fabricImg);
     canvas.setActiveObject(fabricImg);
   };
 

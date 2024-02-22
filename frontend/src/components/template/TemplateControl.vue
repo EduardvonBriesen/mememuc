@@ -84,7 +84,6 @@ async function goToNext() {
 }
 
 async function goToRandom() {
-  emit("clearCanvas");
   index.value = Math.floor(Math.random() * templates.value.length);
   props.setTemplate(
     await getTemplateImage(templates.value[index.value].id),
